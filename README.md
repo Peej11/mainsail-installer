@@ -7,7 +7,14 @@ Run `chmod +x ~/mainsail-installer/mainsail-installer.sh` to make executable.
 Run `~/mainsail-installer/mainsail-installer.sh` to start the install.  
 
 # Known Issues
-Copy a working `printer.cfg` with the edits from [here](https://github.com/meteyou/mainsail#configure-klipper-api) to your home directory. The script will copy a sample `printer.cfg` currently but it may cause issues in its current form.  
-The install process for Klipper will only compile the MCU firmware. You may get connection errors if the firmware on the board is not already flashed for Klipper.  
-Installer will only report a wireless IP address at the end. If you have a wired connection, it won't display an address.
-Error detection isn't terribly robust.
+* Copy a working `printer.cfg` with the edits from [here](https://github.com/meteyou/mainsail#configure-klipper-api) to your home directory. The script will copy a sample `printer.cfg` if no config is detected but it may cause issues in its current form.  
+* The install process for Klipper will only compile the MCU firmware. You may get connection errors if the firmware on the board is not already flashed for Klipper.  
+* Installer will only report a wireless IP address at the end. If you have a wired connection, it won't display an address.  
+* Error detection isn't terribly robust.
+
+# To Do List
+* Clean up `printer.cfg` handling  
+* Add MCU flashing  
+* Add 'support' for wired or wireless connections  
+* Better error handling  
+* Add MPJEG install & configure webcam
