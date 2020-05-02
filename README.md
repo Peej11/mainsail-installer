@@ -8,6 +8,8 @@ Copy the contents of this repository to your home directory on the pi.
 Run `chmod +x ~/mainsail-installer/mainsail-installer.sh` to make executable.  
 Run `~/mainsail-installer/mainsail-installer.sh` to start the install.  
 
+Note: This script will require input during `make menuconfig` during the Klipper install but is otherwise completely automated.
+
 # Known Issues
 * Copy a working `printer.cfg` with the edits from [here](https://github.com/meteyou/mainsail#configure-klipper-api) to your home directory. The script will copy a sample `printer.cfg` if no config is detected but it may cause issues in its current form.  
 * The install process for Klipper will only compile the MCU firmware. You may get connection errors if the firmware on the board is not already flashed for Klipper.  
