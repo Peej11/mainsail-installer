@@ -1,6 +1,8 @@
 # mainsail-installer
 This is an install script to setup [Klipper](https://github.com/KevinOConnor/klipper), the [Klipper API](https://github.com/Arksine/klipper/tree/work-web_server-20200131), and the [Web Interface](https://github.com/meteyou/mainsail) on a clean SD card image with Raspbian
 
+Thanks to tinpec for cleaning up the first pass of my ASCII art :)
+
 # How to Install
 Copy the contents of this repository to your home directory on the pi.  
 Run `chmod +x ~/mainsail-installer/mainsail-installer.sh` to make executable.  
