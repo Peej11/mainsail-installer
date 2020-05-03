@@ -6,9 +6,9 @@ COL_NONE='\e[0m'
 ERROR=0
 NGINX_ERROR=''
 KLIPPER_API_ERROR=''
-WIRELESS_IP="$(ip addr show wlan0 | awk '$1 == "inet" {gsub(/\/.*$/, "", $2); print $2}')"
+SYSTEM_IP="$(ip route get 1.1.1.1 | awk '{print $7}' | head -n1)"
 MAINSAIL_FILE="https://github.com/meteyou/mainsail/releases/download/v0.0.9/mainsail-alpha-0.0.9.zip"
-GUI_JSON="{\"webcam\":{\"url\":\"http://${WIRELESS_IP}:8081/?action=stream\"},\"gui\":{\"dashboard\":{\"boolWebcam\":true,\"boolTempchart\":true,\"boolConsole\":false,\"hiddenMacros\":[]},\"webcam\":{\"bool\":false},\"gcodefiles\":{\"countPerPage\":10}}}"
+GUI_JSON="{\"webcam\":{\"url\":\"http://${SYSTEM_IP}:8081/?action=stream\"},\"gui\":{\"dashboard\":{\"boolWebcam\":true,\"boolTempchart\":true,\"boolConsole\":false,\"hiddenMacros\":[]},\"webcam\":{\"bool\":false},\"gcodefiles\":{\"countPerPage\":10}}}"
 WEBCAM_SETUP="Y"
 
 
@@ -334,7 +334,7 @@ display_info_finish()
     echo
     echo
     echo "The installer did not detect any errors."
-    echo "You should be able to access Mainsail in your browser at ${WIRELESS_IP}"
+    echo "You should be able to access Mainsail in your browser at ${SYSTEM_IP}"
   else
     echo
     echo

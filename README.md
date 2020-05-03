@@ -14,12 +14,12 @@ Note: This script will require input for `make menuconfig` during the Klipper in
 # Known Issues
 * `printer.cfg` handling might cause issues unless you copy a working config.  
 * The install process for Klipper will only compile the MCU firmware. You may get connection errors if the firmware on the board is not already flashed for Klipper.  
-* Installer will only report a wireless IP address at the end. If you have a wired connection, it won't display an address.  
+* ~~Installer will only report a wireless IP address at the end. If you have a wired connection, it won't display an address. ~~ 
 * Error detection isn't terribly robust.
 
 # To Do List
 * Clean up `printer.cfg` handling  
 * Add MCU flashing  
-* Add 'support' for wired or wireless connections  
+* ~~Add 'support' for wired or wireless connections~~  
 * Better error handling  
 * ~~Add MJPEG install & configure webcam~~
