@@ -22,4 +22,4 @@ Note: This script will require input for `make menuconfig` during the Klipper in
 * Add MCU flashing  
 * Add 'support' for wired or wireless connections  
 * Better error handling  
-* Add MPJEG install & configure webcam
+* Add MJPEG install & configure webcam
