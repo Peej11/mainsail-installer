@@ -8,6 +8,9 @@ NGINX_ERROR=''
 KLIPPER_API_ERROR=''
 WIRELESS_IP="$(ip addr show wlan0 | awk '$1 == "inet" {gsub(/\/.*$/, "", $2); print $2}')"
 MAINSAIL_FILE="https://github.com/meteyou/mainsail/releases/download/v0.0.9/mainsail-alpha-0.0.9.zip"
+GUI_JSON="{\"webcam\":{\"url\":\"http://${WIRELESS_IP}:8081/?action=stream\"},\"gui\":{\"dashboard\":{\"boolWebcam\":true,\"boolTempchart\":true,\"boolConsole\":false,\"hiddenMacros\":[]},\"webcam\":{\"bool\":false},\"gcodefiles\":{\"countPerPage\":10}}}"
+WEBCAM_SETUP="Y"
+
 
 verify_ready()
 {
@@ -88,20 +91,33 @@ clean_image_warning()
 {
   echo "This installer is intended to run on a clean Raspbian image." 
   echo "Do you wish to continue? (Y/n)"
-  read var_continue
+  read CONTINUE_INSTALL
   
-  if [ "$var_continue" == "N" ] | [ "$var_continue" == "n" ]; then
+  while [[ $CONTINUE_INSTALL != "Y" ]] && [[ $CONTINUE_INSTALL != "y" ]] && [[ $CONTINUE_INSTALL != "N" ]] && [[ $CONTINUE_INSTALL != "n" ]]
+  do
+    echo "Do you wish to continue? (Y/n)"
+    read CONTINUE_INSTALL
+  done
+  
+  if [[ $CONTINUE_INSTALL == "N" ]] || [[ $CONTINUE_INSTALL == "n" ]]; then
     exit 0
   fi
 }
 
 get_inputs()
 {
-echo "Please provide your IP address. This will be used to allow access" 
-echo "to the Web UI. You can provide an address using CIDR notation to whitelist"
-echo "an entire subnet. If you want to whitelist a specific client provide just" 
-echo "that client's IP address. (example CIDR notation - 192.168.0.0/24)"
-read IP_ADDRESS
+  echo
+  echo
+  echo "Please provide your IP address. This will be used to allow access" 
+  echo "to the Web UI. You can provide an address using CIDR notation to whitelist"
+  echo "an entire subnet. If you want to whitelist a specific client provide just" 
+  echo "that client's IP address. (example CIDR notation - 192.168.0.0/24)"
+  read IP_ADDRESS
+  
+  echo
+  echo
+  echo "Do you want to setup mjpeg-streamer to use a webcam? (Y/n)"
+  read WEBCAM_SETUP
 }
 
 install_packages()
@@ -137,7 +153,7 @@ install_printer_config()
 	if [[ $(cat /home/pi/printer.cfg | grep \\[virtual_sdcard]) == '[virtual_sdcard]' ]]; then
 	  echo "Virtual SDcard is already configured"
     else
-	  echo "Virtual SDcard is not configured"
+	  echo "Virtual SDcard is not configured in printer.cfg"
 	  echo "Configuring Virtual SDcard"
 	  echo $'\n\n[virtual_sdcard]' >> /home/pi/printer.cfg
 	  echo "path: /home/pi/sdcard" >> /home/pi/printer.cfg
@@ -146,7 +162,7 @@ install_printer_config()
 	if [[ $(cat /home/pi/printer.cfg | grep \\[remote_api]) == '[remote_api]' ]]; then
 	  echo "Remote API is already configured"
     else
-	  echo "Remote API is not configured"
+	  echo "Remote API is not configured in printer.cfg"
 	  echo "Configuring Remote API"
 	  echo $'\n\n[remote_api]' >> /home/pi/printer.cfg
 	  echo "trusted_clients:" >> /home/pi/printer.cfg
@@ -212,7 +228,8 @@ test_api()
   echo "The API response is:"
   strTEST="$(curl -sG4 http://localhost:7125/printer/info)"
   echo ${strTEST}
-  sleep 2
+  echo
+  echo
   
   if [ ${strTEST:0:10} == "{\"result\":" ]; then
     echo "The Klipper API service is working correctly"
@@ -259,7 +276,8 @@ test_nginx()
   echo "The API response is:"
   strTEST="$(curl -sG4 http://localhost/printer/info)"
   echo ${strTEST}
-  sleep 2
+  echo
+  echo
   
   if [ ${strTEST:0:10} == "{\"result\":" ]; then
     echo "Nginx is configured correctly"
@@ -285,9 +303,34 @@ install_mainsail()
   wget -q -O mainsail.zip ${MAINSAIL_FILE} && unzip mainsail.zip && rm mainsail.zip
 }
 
+setup_webcam()
+{
+  
+  if [[ $WEBCAM_SETUP == "Y" ]] || [[ $WEBCAM_SETUP == "y" ]]; then
+    echo
+    echo
+	echo "####################"
+	echo "Installing mjpeg-streamer"
+	sleep .5
+	sudo apt-get install build-essential imagemagick libv4l-dev libjpeg-dev cmake -y
+	sudo apt update --fix-missing
+	sudo apt-get install build-essential imagemagick libv4l-dev libjpeg-dev cmake -y
+	cd /tmp
+	git clone https://github.com/jacksonliam/mjpg-streamer.git
+	cd mjpg-streamer/mjpg-streamer-experimental
+	make
+	sudo make install
+	mv /home/pi/mainsail-installer/mjpg-streamer.sh /home/pi/mjpg-streamer.sh
+	chmod +x /home/pi/mjpg-streamer.sh
+	(crontab -l 2>/dev/null; echo "@reboot /home/pi/mjpg-streamer.sh start") | crontab -
+	/home/pi/mjpg-streamer.sh start
+	echo ${GUI_JSON} > /home/pi/sdcard/gui.json
+  fi
+}
+
 display_info_finish()
 {  
-  if [ ERROR != 0 ]; then
+  if [[ $ERROR == 0 ]]; then
     echo
     echo
     echo "The installer did not detect any errors."
@@ -314,4 +357,5 @@ test_api
 install_nginx
 test_nginx
 install_mainsail
+setup_webcam
 display_info_finish
