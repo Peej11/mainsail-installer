@@ -4,7 +4,7 @@ This is an install script to setup [Klipper](https://github.com/KevinOConnor/kli
 Thanks to tinpec for cleaning up the first pass of my ASCII art :)
 
 # How to Install
-Copy the contents of this repository to your home directory on the pi.  
+Copy the contents of this repository to ~/mainsail-installer on the pi.  
 Copy a working `printer.cfg` to your home directory. The script will copy a sample `printer.cfg` if no config is detected but it may cause issues in its current form.  
 Run `chmod +x ~/mainsail-installer/mainsail-installer.sh` to make executable.  
 Run `~/mainsail-installer/mainsail-installer.sh` to start the install.  
