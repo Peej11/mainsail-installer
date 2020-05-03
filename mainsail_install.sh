@@ -4,15 +4,16 @@
 COL_RED='\e[0;31m'
 COL_NONE='\e[0m'
 ERROR=0
-NGINX_ERROR=''
-KLIPPER_API_ERROR=''
 SYSTEM_IP="$(ip route get 1.1.1.1 | awk '{print $7}' | head -n1)"
 MAINSAIL_FILE="https://github.com/meteyou/mainsail/releases/download/v0.0.9/mainsail-alpha-0.0.9.zip"
 GUI_JSON="{\"webcam\":{\"url\":\"http://${SYSTEM_IP}:8081/?action=stream\"},\"gui\":{\"dashboard\":{\"boolWebcam\":true,\"boolTempchart\":true,\"boolConsole\":false,\"hiddenMacros\":[]},\"webcam\":{\"bool\":false},\"gcodefiles\":{\"countPerPage\":10}}}"
-WEBCAM_SETUP="Y"
-CHANGE_HOSTNAME=""
 CURRENT_HOSTNAME="$(hostname)"
-NEW_HOSTNAME=""
+V0_CONFIG=""
+V1_250_CONFIG=""
+V1_300_CONFIG=""
+V2_250_CONFIG="https://raw.githubusercontent.com/VoronDesign/Voron-2/Voron2.4/firmware/klipper_configurations/VORON2_stock_250_printer.cfg"
+V2_300_CONFIG="https://raw.githubusercontent.com/VoronDesign/Voron-2/Voron2.4/firmware/klipper_configurations/VORON2_stock_300_printer.cfg"
+V2_350_CONFIG="https://raw.githubusercontent.com/VoronDesign/Voron-2/Voron2.4/firmware/klipper_configurations/VORON2_stock_350_printer.cfg"
 
 
 verify_ready()
@@ -115,20 +116,20 @@ get_inputs()
   echo "to the Web UI. You can provide an address using CIDR notation to whitelist"
   echo "an entire subnet. If you want to whitelist a specific client provide just" 
   echo "that client's IP address. (example CIDR notation - 192.168.0.0/24)"
-  read IP_ADDRESS
+  read IP_ADDRESS_RESPONSE
   
   echo
   echo
   echo "Do you want to setup mjpeg-streamer to use a webcam? (Y/n)"
-  read WEBCAM_SETUP
+  read WEBCAM_SETUP_RESPONSE
   
-  while [[ $WEBCAM_SETUP != "Y" ]] && [[ $WEBCAM_SETUP != "y" ]] && [[ $WEBCAM_SETUP != "N" ]] && [[ $WEBCAM_SETUP != "n" ]]
+  while [[ $WEBCAM_SETUP_RESPONSE != "Y" ]] && [[ $WEBCAM_SETUP_RESPONSE != "y" ]] && [[ $WEBCAM_SETUP_RESPONSE != "N" ]] && [[ $WEBCAM_SETUP_RESPONSE != "n" ]]
   do
     echo "Do you want to setup mjpeg-streamer? (Y/n)"
-    read WEBCAM_SETUP
+    read WEBCAM_SETUP_RESPONSE
   done
   
-  if [[ $WEBCAM_SETUP = "Y" ]] || [[ $WEBCAM_SETUP = "y" ]]; then
+  if [[ $WEBCAM_SETUP_RESPONSE = "Y" ]] || [[ $WEBCAM_SETUP_RESPONSE = "y" ]]; then
     echo
     echo
     echo "IMPORTANT"
@@ -139,18 +140,99 @@ get_inputs()
   echo
   echo
   echo "Do you want to change the system hostname? (Y/n)"
-  read CHANGE_HOSTNAME
-  while [[ $CHANGE_HOSTNAME != "Y" ]] && [[ $CHANGE_HOSTNAME != "y" ]] && [[ $CHANGE_HOSTNAME != "N" ]] && [[ $CHANGE_HOSTNAME != "n" ]]
+  read CHANGE_HOSTNAME_RESPONSE
+  while [[ $CHANGE_HOSTNAME_RESPONSE != "Y" ]] && [[ $CHANGE_HOSTNAME_RESPONSE != "y" ]] && [[ $CHANGE_HOSTNAME_RESPONSE != "N" ]] && [[ $CHANGE_HOSTNAME_RESPONSE != "n" ]]
   do
     echo "Do you want to change hostname? (Y/n)"
-    read CHANGE_HOSTNAME
+    read CHANGE_HOSTNAME_RESPONSE
   done
   
-  if [[ $CHANGE_HOSTNAME == "Y" ]] || [[ $CHANGE_HOSTNAME == "y" ]]; then
+  if [[ $CHANGE_HOSTNAME_RESPONSE == "Y" ]] || [[ $CHANGE_HOSTNAME_RESPONSE == "y" ]]; then
     echo "Please provide a new hostname for the system."
 	read NEW_HOSTNAME
   fi
   
+  echo
+  echo
+  echo "Do you already have a working printer.cfg you will use for this setup? (Y/n)"
+  read PRINTER_CONFIG_RESPONSE
+  
+  while [[ $PRINTER_CONFIG_RESPONSE != "Y" ]] && [[ $PRINTER_CONFIG_RESPONSE != "y" ]] && [[ $PRINTER_CONFIG_RESPONSE != "N" ]] && [[ $PRINTER_CONFIG_RESPONSE != "n" ]]
+  do
+    echo "Do you already have a printer.cfg to use? (Y/n)"
+    read PRINTER_CONFIG_RESPONSE
+  done
+  
+  if [[ $PRINTER_CONFIG_RESPONSE == "Y" ]] || [[ $PRINTER_CONFIG_RESPONSE == "y" ]];then
+    echo "Ensure printer.cfg is already copied to /home/pi/."
+	sleep 5
+  else
+    echo "Which printer do you need a config for (V0/V1/V2)?"
+	read PRINTER_CONFIG_RESPONSE
+	while [[ $PRINTER_CONFIG_RESPONSE != "V0" ]] && [[ $PRINTER_CONFIG_RESPONSE != "V1" ]] && [[ $PRINTER_CONFIG_RESPONSE != "V2" ]]
+	do
+      echo "Which printer do you need a config for (V0/V1/V2)?"
+	  read PRINTER_CONFIG_RESPONSE
+	done
+	
+	if [[ $PRINTER_CONFIG_RESPONSE == "V0" ]]; then
+	  cd /home/pi
+		echo
+		echo "Installing V0 config"
+	  wget -O "printer.cfg" $V0_CONFIG
+	elif [[ $PRINTER_CONFIG_RESPONSE == "V1" ]]; then
+	  echo
+	  echo "What size build do you have (250/300)?"
+	  read PRINTER_CONFIG_RESPONSE
+	  
+	  while [[ $PRINTER_CONFIG_RESPONSE != "250" ]] && [[ $PRINTER_CONFIG_RESPONSE != "300" ]]
+	  do
+	    echo "What size build do you have (250/300)?"
+	    read PRINTER_CONFIG_RESPONSE
+	  done
+	  
+	  if [[ $PRINTER_CONFIG_RESPONSE == "250" ]]; then
+	    cd /home/pi
+		echo
+		echo "Installing V1 250^3 config"
+	    wget -O "printer.cfg" $V1_250_CONFIG
+	  elif [[ $PRINTER_CONFIG_RESPONSE == "300" ]]; then
+	    cd /home/pi
+		echo
+		echo "Installing V1 300^3 config"
+	    wget -O "printer.cfg" $V1_300_CONFIG
+	  fi
+	  
+	elif [[ $PRINTER_CONFIG_RESPONSE == "V2" ]]; then
+	  echo
+	  echo "What size build do you have (250/300/350)?"
+	  read PRINTER_CONFIG_RESPONSE
+	  
+	  while [[ $PRINTER_CONFIG_RESPONSE != "250" ]] && [[ $PRINTER_CONFIG_RESPONSE != "300" ]] && [[ $PRINTER_CONFIG_RESPONSE != "350" ]]
+	  do
+	    echo "What size build do you have (250/300/350)?"
+	    read PRINTER_CONFIG_RESPONSE
+	  done
+	  
+	  if [[ $PRINTER_CONFIG_RESPONSE == "250" ]]; then
+	    cd /home/pi
+		echo
+		echo "Installing V2 250^3 config"
+	    wget -O "printer.cfg" $V2_250_CONFIG
+	  elif [[ $PRINTER_CONFIG_RESPONSE == "300" ]]; then
+	    cd /home/pi
+		echo
+		echo "Installing V2 300^3 config"
+	    wget -O "printer.cfg" $V2_300_CONFIG
+	  elif [[ $PRINTER_CONFIG_RESPONSE == "350" ]]; then
+	    cd /home/pi
+		echo
+		echo "Installing V2 350^3 config"
+	    wget -O "printer.cfg" $V2_350_CONFIG
+	  fi
+	fi
+  fi
+    
   echo
   echo
   echo "IMPORTANT NOTES"
@@ -191,9 +273,11 @@ install_printer_config()
   echo "########################"
   echo
   sleep .5
+    
   if [ -e "/home/pi/printer.cfg" ]; then  
 	echo "Printer.cfg exists"
     echo "Copying contents to file"
+	rm /home/pi/mainsail-installer/empty_printer.cfg
     sleep .5
 	
 	if [[ $(cat /home/pi/printer.cfg | grep \\[virtual_sdcard]) == '[virtual_sdcard]' ]]; then
@@ -212,7 +296,7 @@ install_printer_config()
 	  echo "Configuring Remote API"
 	  echo $'\n\n[remote_api]' >> /home/pi/printer.cfg
 	  echo "trusted_clients:" >> /home/pi/printer.cfg
-	  echo " $IP_ADDRESS" >> /home/pi/printer.cfg
+	  echo " $IP_ADDRESS_RESPONSE" >> /home/pi/printer.cfg
 	  echo " 127.0.0.0/24" >> /home/pi/printer.cfg
 	fi
 	
@@ -220,7 +304,7 @@ install_printer_config()
     echo "Printer.cfg does not exist"
 	echo "Copying sample file for Mainsail to use."
     sleep .5
-	cp /home/pi/mainsail-installer/empty_printer.cfg /home/pi/printer.cfg
+	mv /home/pi/mainsail-installer/empty_printer.cfg /home/pi/printer.cfg
 	chown pi:pi /home/pi/printer.cfg
 	chmod 644 /home/pi/printer.cfg
   fi

@@ -30,11 +30,14 @@ Note: This script will require input for `make menuconfig` during the Klipper in
 * Be sure to use your working `printer.cfg` from your current printer. The installer will use a simple config otherwise but it will cause issues currently.  
 * The install process for Klipper will only compile the MCU firmware. You may get connection errors if the firmware on the board is not already flashed for Klipper.  
 * ~~Installer will only report a wireless IP address at the end. If you have a wired connection, it won\'t display an address.~~  
-* ~~Error detection isn\'t terribly robust.~~
+* ~~Error detection isn\'t terribly robust.~~  
+* There are not currently any default configs for V0 or V1. Wget will fail in these instances.
 
 # To Do List
 * Clean up `printer.cfg` handling  
 * Add MCU flashing  
 * ~~Add 'support' for wired or wireless connections~~  
 * ~~Better error handling~~  
-* ~~Add MJPEG install & configure webcam~~
+* ~~Add MJPEG install & configure webcam~~  
+* Validate IP address input  
+* Add V0 and V1 printer.cfg links when available
