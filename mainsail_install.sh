@@ -95,6 +95,15 @@ clean_image_warning()
   fi
 }
 
+get_inputs()
+{
+echo "Please provide your IP address. This will be used to allow access" 
+echo "to the Web UI. You can provide an address using CIDR notation to whitelist"
+echo "an entire subnet. If you want to whitelist a specific client provide just" 
+echo "that client's IP address. (example CIDR notation - 192.168.0.0/24)"
+read IP_ADDRESS
+}
+
 install_packages()
 {  
   cd /home/pi
@@ -124,7 +133,27 @@ install_printer_config()
 	echo "Printer.cfg exists"
     echo "Copying contents to file"
     sleep .5
-	## ADD IMPORTANT STUFF TO PRINTER.CFG ##
+	
+	if [[ $(cat /home/pi/printer.cfg | grep \\[virtual_sdcard]) == '[virtual_sdcard]' ]]; then
+	  echo "Virtual SDcard is already configured"
+    else
+	  echo "Virtual SDcard is not configured"
+	  echo "Configuring Virtual SDcard"
+	  echo $'\n\n[virtual_sdcard]' >> /home/pi/printer.cfg
+	  echo "path: /home/pi/sdcard" >> /home/pi/printer.cfg
+	fi
+	
+	if [[ $(cat /home/pi/printer.cfg | grep \\[remote_api]) == '[remote_api]' ]]; then
+	  echo "Remote API is already configured"
+    else
+	  echo "Remote API is not configured"
+	  echo "Configuring Remote API"
+	  echo $'\n\n[remote_api]' >> /home/pi/printer.cfg
+	  echo "trusted_clients:" >> /home/pi/printer.cfg
+	  echo " $IP_ADDRESS" >> /home/pi/printer.cfg
+	  echo " 127.0.0.0/24" >> /home/pi/printer.cfg
+	fi
+	
   else
     echo "Printer.cfg does not exist"
 	echo "Copying sample file for Mainsail to use."
@@ -266,7 +295,7 @@ display_info_finish()
   else
     echo
     echo
-	echo "The installer encountered the following errors during install"
+    echo "The installer encountered the following errors during install"
     echo ${KLIPPER_API_ERROR}
     echo ${NGINX_ERROR}
   fi
@@ -276,6 +305,7 @@ display_info_finish()
 verify_ready
 ascii_art
 clean_image_warning
+get_inputs
 install_packages
 install_printer_config
 install_klipper
