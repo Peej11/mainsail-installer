@@ -89,157 +89,109 @@ ascii_art()
                                     ###
   ${COL_NONE}
   "
+  sleep 2
 }
 
 clean_image_warning()
 {
-  echo "This installer is intended to run on a clean Raspbian image." 
-  echo "Do you want to continue? (Y/n)"
-  read CONTINUE_INSTALL
-  
-  while [[ $CONTINUE_INSTALL != "Y" ]] && [[ $CONTINUE_INSTALL != "y" ]] && [[ $CONTINUE_INSTALL != "N" ]] && [[ $CONTINUE_INSTALL != "n" ]]
-  do
-    echo "Do you want to continue? (Y/n)"
-    read CONTINUE_INSTALL
-  done
-  
-  if [[ $CONTINUE_INSTALL == "N" ]] || [[ $CONTINUE_INSTALL == "n" ]]; then
+  if (whiptail --title "Confirm Install" --yesno "This installer is intended to run on a clean Raspbian image. Do you want to continue?" 8 78); then
+  CONTINUE_INSTALL="Y"
+  else
     exit 0
   fi
 }
 
 get_inputs()
 {
-  echo
-  echo
-  echo "Please provide your IP address. This will be used to allow access" 
-  echo "to the Web UI. You can provide an address using CIDR notation to whitelist"
-  echo "an entire subnet. If you want to whitelist a specific client provide just" 
-  echo "that client's IP address. (example CIDR notation - 192.168.0.0/24)"
-  read IP_ADDRESS_RESPONSE
+  IP_ADDRESS_RESPONSE=$(whiptail --title "Provide IP Address" --inputbox "Please provide your IP address.\nThis will be used to allow access to the Web UI.\nYou can provide an address range using CIDR notation to whitelist an entire subnet.\nIf you want to whitelist a specific client provide just that client's IP address.\nYou can edit this later in your printer.cfg under the remote_api section." 12 90 "192.168.0.0/24" 3>&1 1>&2 2>&3)
   
-  echo
-  echo
-  echo "Do you want to setup mjpeg-streamer to use a webcam? (Y/n)"
-  read WEBCAM_SETUP_RESPONSE
-  
-  while [[ $WEBCAM_SETUP_RESPONSE != "Y" ]] && [[ $WEBCAM_SETUP_RESPONSE != "y" ]] && [[ $WEBCAM_SETUP_RESPONSE != "N" ]] && [[ $WEBCAM_SETUP_RESPONSE != "n" ]]
-  do
-    echo "Do you want to setup mjpeg-streamer? (Y/n)"
-    read WEBCAM_SETUP_RESPONSE
-  done
-  
-  if [[ $WEBCAM_SETUP_RESPONSE = "Y" ]] || [[ $WEBCAM_SETUP_RESPONSE = "y" ]]; then
-    echo
-    echo
-    echo "IMPORTANT"
-	echo "You must have your webcam connected or the mjpeg-streamer service won't start."
-	sleep 3
-  fi
-  
-  echo
-  echo
-  echo "Do you want to change the system hostname? (Y/n)"
-  read CHANGE_HOSTNAME_RESPONSE
-  while [[ $CHANGE_HOSTNAME_RESPONSE != "Y" ]] && [[ $CHANGE_HOSTNAME_RESPONSE != "y" ]] && [[ $CHANGE_HOSTNAME_RESPONSE != "N" ]] && [[ $CHANGE_HOSTNAME_RESPONSE != "n" ]]
-  do
-    echo "Do you want to change hostname? (Y/n)"
-    read CHANGE_HOSTNAME_RESPONSE
-  done
-  
-  if [[ $CHANGE_HOSTNAME_RESPONSE == "Y" ]] || [[ $CHANGE_HOSTNAME_RESPONSE == "y" ]]; then
-    echo "Please provide a new hostname for the system."
-	read NEW_HOSTNAME
-  fi
-  
-  echo
-  echo
-  echo "Do you already have a working printer.cfg you will use for this setup? (Y/n)"
-  read PRINTER_CONFIG_RESPONSE
-  
-  while [[ $PRINTER_CONFIG_RESPONSE != "Y" ]] && [[ $PRINTER_CONFIG_RESPONSE != "y" ]] && [[ $PRINTER_CONFIG_RESPONSE != "N" ]] && [[ $PRINTER_CONFIG_RESPONSE != "n" ]]
-  do
-    echo "Do you already have a printer.cfg to use? (Y/n)"
-    read PRINTER_CONFIG_RESPONSE
-  done
-  
-  if [[ $PRINTER_CONFIG_RESPONSE == "Y" ]] || [[ $PRINTER_CONFIG_RESPONSE == "y" ]];then
-    echo "Ensure printer.cfg is already copied to /home/pi/."
-	sleep 5
+  if (whiptail --title "Setup Webcam" --yesno "Do you want to setup mjpeg-streamer to use a webcam?" 8 78); then
+    WEBCAM_SETUP_RESPONSE="Y"
+  whiptail --title "Verify Webcam" --msgbox "You must have your webcam connected or the mjpeg-streamer service won't start." 8 78
   else
-    echo "Which printer do you need a config for (V0/V1/V2)?"
-	read PRINTER_CONFIG_RESPONSE
-	while [[ $PRINTER_CONFIG_RESPONSE != "V0" ]] && [[ $PRINTER_CONFIG_RESPONSE != "V1" ]] && [[ $PRINTER_CONFIG_RESPONSE != "V2" ]]
-	do
-      echo "Which printer do you need a config for (V0/V1/V2)?"
-	  read PRINTER_CONFIG_RESPONSE
-	done
-	
-	if [[ $PRINTER_CONFIG_RESPONSE == "V0" ]]; then
-	  cd /home/pi
-		echo
-		echo "Installing V0 config"
-	  wget -O "printer.cfg" $V0_CONFIG
-	elif [[ $PRINTER_CONFIG_RESPONSE == "V1" ]]; then
-	  echo
-	  echo "What size build do you have (250/300)?"
-	  read PRINTER_CONFIG_RESPONSE
-	  
-	  while [[ $PRINTER_CONFIG_RESPONSE != "250" ]] && [[ $PRINTER_CONFIG_RESPONSE != "300" ]]
-	  do
-	    echo "What size build do you have (250/300)?"
-	    read PRINTER_CONFIG_RESPONSE
-	  done
-	  
-	  if [[ $PRINTER_CONFIG_RESPONSE == "250" ]]; then
-	    cd /home/pi
-		echo
-		echo "Installing V1 250^3 config"
-	    wget -O "printer.cfg" $V1_250_CONFIG
-	  elif [[ $PRINTER_CONFIG_RESPONSE == "300" ]]; then
-	    cd /home/pi
-		echo
-		echo "Installing V1 300^3 config"
-	    wget -O "printer.cfg" $V1_300_CONFIG
-	  fi
-	  
-	elif [[ $PRINTER_CONFIG_RESPONSE == "V2" ]]; then
-	  echo
-	  echo "What size build do you have (250/300/350)?"
-	  read PRINTER_CONFIG_RESPONSE
-	  
-	  while [[ $PRINTER_CONFIG_RESPONSE != "250" ]] && [[ $PRINTER_CONFIG_RESPONSE != "300" ]] && [[ $PRINTER_CONFIG_RESPONSE != "350" ]]
-	  do
-	    echo "What size build do you have (250/300/350)?"
-	    read PRINTER_CONFIG_RESPONSE
-	  done
-	  
-	  if [[ $PRINTER_CONFIG_RESPONSE == "250" ]]; then
-	    cd /home/pi
-		echo
-		echo "Installing V2 250^3 config"
-	    wget -O "printer.cfg" $V2_250_CONFIG
-	  elif [[ $PRINTER_CONFIG_RESPONSE == "300" ]]; then
-	    cd /home/pi
-		echo
-		echo "Installing V2 300^3 config"
-	    wget -O "printer.cfg" $V2_300_CONFIG
-	  elif [[ $PRINTER_CONFIG_RESPONSE == "350" ]]; then
-	    cd /home/pi
-		echo
-		echo "Installing V2 350^3 config"
-	    wget -O "printer.cfg" $V2_350_CONFIG
-	  fi
-	fi
+    WEBCAM_SETUP_RESPONSE="N"
   fi
-    
-  echo
-  echo
-  echo "IMPORTANT NOTES"
-  echo "This installer will take several minutes to complete."
-  echo "User input is required during the primary Klipper install but is otherwise completely automated." 
-  echo "You should be able to access Mainsail in your browser at ${SYSTEM_IP} after the install completes."
-  sleep 5
+  
+  if (whiptail --title "Change Hostname" --yesno "Do you want to change the system hostname?" 8 78); then
+    CHANGE_HOSTNAME_RESPONSE="Y"
+    NEW_HOSTNAME=$(whiptail --title "Hostname" --inputbox "Please provide a hostname." 8 78 3>&1 1>&2 2>&3)
+  else
+    CHANGE_HOSTNAME_RESPONSE="N"
+  fi
+  
+  if (whiptail --title "Verify printer.cfg" --yesno "Do you already have a working printer.cfg you will use for this setup?" 8 78); then
+    whiptail --title "Verify printer.cfg" --msgbox "Ensure your printer.cfg is already copied to /home/pi before continuing." 8 78
+  else
+    PRINTER_MODEL=$(whiptail --title "Select printer" --menu "What printer model do you have?" 12 48 4 \
+      "V0" "" \
+      "V1" ""\
+      "V2" "" 3>&2 2>&1 1>&3
+    )
+  fi
+  
+  case $PRINTER_MODEL in
+    "V0")
+      whiptail --title "Download printer.cfg" --msgbox "The default V0 config will be downloaded from Github." 8 78
+      cd /home/pi
+      wget -O "printer.cfg" $V0_CONFIG
+    ;;
+    "V1")
+      PRINTER_MODEL=$(whiptail --title "Select printer size" --menu "What size is your printer?" 12 48 4 \
+      "250^3" "" \
+      "300^3" "" 3>&2 2>&1 1>&3)
+    case $PRINTER_MODEL in
+      "250^3")
+        whiptail --title "Download printer.cfg" --msgbox "The default V1 - 250^3 config will be downloaded from Github." 8 78
+        cd /home/pi
+        wget -O "printer.cfg" $V1_250_CONFIG
+      ;;
+      "300^3")
+        whiptail --title "Download printer.cfg" --msgbox "The default V1 - 300^3 config will be downloaded from Github." 8 78
+        cd /home/pi
+        wget -O "printer.cfg" $V1_300_CONFIG
+      ;;
+    esac
+    ;;
+    "V2")
+      PRINTER_MODEL=$(whiptail --title "Select printer size" --menu "What size is your printer?" 12 48 4 \
+      "250^3" "" \
+      "300^3" "" \
+      "350^3" "" 3>&2 2>&1 1>&3)
+    case $PRINTER_MODEL in
+      "250^3")
+        whiptail --title "Download printer.cfg" --msgbox "The default V2 - 250^3 config will be downloaded from Github." 8 78
+        cd /home/pi
+        wget -O "printer.cfg" $V2_250_CONFIG
+      ;;
+      "300^3")
+        whiptail --title "Download printer.cfg" --msgbox "The default V2 - 300^3 config will be downloaded from Github." 8 78
+        cd /home/pi
+        wget -O "printer.cfg" $V2_300_CONFIG
+      ;;
+      "350^3")
+        whiptail --title "Download printer.cfg" --msgbox "The default V2 - 350^3 config will be downloaded from Github." 8 78
+        cd /home/pi
+        wget -O "printer.cfg" $V2_350_CONFIG
+      ;;
+    esac
+    ;;
+  esac   
+ 
+  whiptail --title "IMPORTANT NOTICE" --msgbox "This installer will take several minutes to complete.\nUser input is required during the primary Klipper install but is otherwise completely automated.\nYou should be able to access Mainsail in your browser at ${SYSTEM_IP} after the install completes." 10 105
+}
+
+verify_inputs()
+{
+  if (whiptail --title "Verify Settings" --yesno "Please confirm the installer settings before continuing:\n\nIP whitelist for Web UI: $IP_ADDRESS_RESPONSE\nConfigure mjpeg-streamer: $WEBCAM_SETUP_RESPONSE\nChange system hostname: $CHANGE_HOSTNAME_RESPONSE" 12 78); then
+    echo
+    echo
+    echo "#################"
+    echo "Beginning Install"
+    echo "#################"
+    echo
+  else
+    get_inputs
+  fi
 }
 
 install_packages()
@@ -275,38 +227,40 @@ install_printer_config()
   sleep .5
     
   if [ -e "/home/pi/printer.cfg" ]; then  
-	echo "Printer.cfg exists"
-    echo "Copying contents to file"
-	rm /home/pi/mainsail-installer/empty_printer.cfg
+  echo "Printer.cfg exists"
+    echo "Verifying virtual_sdcard and remote_api are enabled"
+	if [ -e "/home/pi/mainsail-installer/empty_printer.cfg" ]; then
+      rm /home/pi/mainsail-installer/empty_printer.cfg
+    fi
     sleep .5
-	
-	if [[ $(cat /home/pi/printer.cfg | grep \\[virtual_sdcard]) == '[virtual_sdcard]' ]]; then
-	  echo "Virtual SDcard is already configured"
-    else
-	  echo "Virtual SDcard is not configured in printer.cfg"
-	  echo "Configuring Virtual SDcard"
-	  echo $'\n\n[virtual_sdcard]' >> /home/pi/printer.cfg
-	  echo "path: /home/pi/sdcard" >> /home/pi/printer.cfg
-	fi
-	
-	if [[ $(cat /home/pi/printer.cfg | grep \\[remote_api]) == '[remote_api]' ]]; then
-	  echo "Remote API is already configured"
-    else
-	  echo "Remote API is not configured in printer.cfg"
-	  echo "Configuring Remote API"
-	  echo $'\n\n[remote_api]' >> /home/pi/printer.cfg
-	  echo "trusted_clients:" >> /home/pi/printer.cfg
-	  echo " $IP_ADDRESS_RESPONSE" >> /home/pi/printer.cfg
-	  echo " 127.0.0.0/24" >> /home/pi/printer.cfg
-	fi
-	
+  
+  if [[ $(cat /home/pi/printer.cfg | grep \\[virtual_sdcard]) == '[virtual_sdcard]' ]]; then
+    echo "Virtual SDcard is already configured"
+  else
+    echo "Virtual SDcard is not configured in printer.cfg"
+    echo "Configuring Virtual SDcard"
+    echo $'\n\n[virtual_sdcard]' >> /home/pi/printer.cfg
+    echo "path: /home/pi/sdcard" >> /home/pi/printer.cfg
+  fi
+  
+  if [[ $(cat /home/pi/printer.cfg | grep \\[remote_api]) == '[remote_api]' ]]; then
+    echo "Remote API is already configured"
+  else
+    echo "Remote API is not configured in printer.cfg"
+    echo "Configuring Remote API"
+    echo $'\n\n[remote_api]' >> /home/pi/printer.cfg
+    echo "trusted_clients:" >> /home/pi/printer.cfg
+    echo " $IP_ADDRESS_RESPONSE" >> /home/pi/printer.cfg
+    echo " 127.0.0.0/24" >> /home/pi/printer.cfg
+  fi
+  
   else
     echo "Printer.cfg does not exist"
-	echo "Copying sample file for Mainsail to use."
+    echo "Copying sample file for Mainsail to use."
     sleep .5
-	mv /home/pi/mainsail-installer/empty_printer.cfg /home/pi/printer.cfg
-	chown pi:pi /home/pi/printer.cfg
-	chmod 644 /home/pi/printer.cfg
+    mv /home/pi/mainsail-installer/empty_printer.cfg /home/pi/printer.cfg
+    chown pi:pi /home/pi/printer.cfg
+    chmod 644 /home/pi/printer.cfg
   fi
 }
 
@@ -360,17 +314,17 @@ test_api()
   echo
   sleep 5
   echo "The API response is:"
-  strTEST="$(curl -sG4 http://localhost:7125/printer/info)"
-  echo ${strTEST}
+  API_RESPONSE="$(curl -sG4 http://localhost:7125/printer/info)"
+  echo ${API_RESPONSE}
   echo
   echo
   
-  if [[ ${strTEST:0:10} == "{\"result\":" ]]; then
+  if [[ ${API_RESPONSE:0:10} == "{\"result\":" ]]; then
     echo "The Klipper API service is working correctly"
   else
     echo "The Klipper API service is not working correctly"
-	ERROR=1
-	KLIPPER_API_ERROR="The Klipper API was not configured correctly"
+    ERROR=1
+    KLIPPER_API_ERROR="The Klipper API was not configured correctly"
   fi
 }
 
@@ -412,18 +366,18 @@ test_nginx()
   echo
   sleep 5
   echo "The API response is:"
-  strTEST="$(curl -sG4 http://localhost/printer/info)"
-  echo ${strTEST}
+  API_RESPONSE="$(curl -sG4 http://localhost/printer/info)"
+  echo ${API_RESPONSE}
   echo
   echo
   
-  if [[ ${strTEST:0:10} == "{\"result\":" ]]; then
+  if [[ ${API_RESPONSE:0:10} == "{\"result\":" ]]; then
     echo "Nginx is configured correctly"
-	sleep 2
+    sleep 2
   else
     echo "Nginx is not configured correctly"
-	ERROR=1
-	NGINX_ERROR="Nginx was not configured correctly"
+    ERROR=1
+    NGINX_ERROR="Nginx was not configured correctly"
     sleep 5
   fi
   echo
@@ -449,24 +403,24 @@ setup_webcam()
   if [[ $WEBCAM_SETUP_RESPONSE == "Y" ]] || [[ $WEBCAM_SETUP_RESPONSE == "y" ]]; then
     echo
     echo
-	echo "#########################"
-	echo "Installing mjpeg-streamer"
-	echo "#########################"
-	echo
-	sleep .5
-	sudo apt-get install build-essential imagemagick libv4l-dev libjpeg-dev cmake -y
-	sudo apt update --fix-missing
-	sudo apt-get install build-essential imagemagick libv4l-dev libjpeg-dev cmake -y
-	cd /tmp
-	git clone https://github.com/jacksonliam/mjpg-streamer.git
-	cd mjpg-streamer/mjpg-streamer-experimental
-	make
-	sudo make install
-	mv /home/pi/mainsail-installer/mjpg-streamer.sh /home/pi/mjpg-streamer.sh
-	chmod +x /home/pi/mjpg-streamer.sh
-	(crontab -l 2>/dev/null; echo "@reboot /home/pi/mjpg-streamer.sh start") | crontab -
-	/home/pi/mjpg-streamer.sh start
-	echo ${GUI_JSON} > /home/pi/sdcard/gui.json
+    echo "#########################"
+    echo "Installing mjpeg-streamer"
+    echo "#########################"
+    echo
+    sleep .5
+    sudo apt-get install build-essential imagemagick libv4l-dev libjpeg-dev cmake -y
+    sudo apt update --fix-missing
+    sudo apt-get install build-essential imagemagick libv4l-dev libjpeg-dev cmake -y
+    cd /tmp
+    git clone https://github.com/jacksonliam/mjpg-streamer.git
+    cd mjpg-streamer/mjpg-streamer-experimental
+    make
+    sudo make install
+    mv /home/pi/mainsail-installer/mjpg-streamer.sh /home/pi/mjpg-streamer.sh
+    chmod +x /home/pi/mjpg-streamer.sh
+    (crontab -l 2>/dev/null; echo "@reboot /home/pi/mjpg-streamer.sh start") | crontab -
+    /home/pi/mjpg-streamer.sh start
+    echo ${GUI_JSON} > /home/pi/sdcard/gui.json
   fi
 }
 
@@ -476,9 +430,9 @@ set_hostname()
     echo
     echo
     echo "Setting hostname to $NEW_HOSTNAME"
-	sudo echo $NEW_HOSTNAME > /etc/hostname
-	sudo sed -i "s/127.0.1.1.*$CURRENT_HOSTNAME/127.0.1.1\t$NEW_HOSTNAME/g" /etc/hosts
-	sudo hostnamectl set-hostname $NEW_HOSTNAME
+  sudo sed -i -e 's/${CURRENT_HOSTNAME}/${HOSTNAME}/g' /etc/hostname
+    sudo sed -i "s/127.0.1.1.*$CURRENT_HOSTNAME/127.0.1.1\t$NEW_HOSTNAME/g" /etc/hosts
+    sudo hostnamectl set-hostname $NEW_HOSTNAME
   fi
 }
 
@@ -499,9 +453,9 @@ display_info_finish()
   
   if [[ $CHANGE_HOSTNAME_RESPONSE == "Y" ]] || [[ $CHANGE_HOSTNAME_RESPONSE == "y" ]]; then
     echo "You should reboot the system after changing the hostname."
-	echo "System will reboot in 10 seconds."
-	sleep 10
-	sudo shutdown -r now
+    echo "System will reboot in 10 seconds."
+    sleep 10
+    sudo shutdown -r now
   fi
 }
 
@@ -510,6 +464,7 @@ verify_ready
 ascii_art
 clean_image_warning
 get_inputs
+verify_inputs
 install_packages
 install_printer_config
 install_klipper
