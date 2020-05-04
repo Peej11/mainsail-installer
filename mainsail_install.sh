@@ -446,7 +446,7 @@ install_mainsail()
 setup_webcam()
 {
   
-  if [[ $WEBCAM_SETUP == "Y" ]] || [[ $WEBCAM_SETUP == "y" ]]; then
+  if [[ $WEBCAM_SETUP_RESPONSE == "Y" ]] || [[ $WEBCAM_SETUP_RESPONSE == "y" ]]; then
     echo
     echo
 	echo "#########################"
@@ -472,7 +472,7 @@ setup_webcam()
 
 set_hostname()
 {
-  if [[ $CHANGE_HOSTNAME == "Y" ]] || [[ $CHANGE_HOSTNAME == "y" ]]; then
+  if [[ $CHANGE_HOSTNAME_RESPONSE == "Y" ]] || [[ $CHANGE_HOSTNAME_RESPONSE == "y" ]]; then
     echo
     echo
     echo "Setting hostname to $NEW_HOSTNAME"
@@ -497,7 +497,7 @@ display_info_finish()
     echo ${NGINX_ERROR}
   fi
   
-  if [[ $CHANGE_HOSTNAME == "Y" ]] || [[ $CHANGE_HOSTNAME == "y" ]]; then
+  if [[ $CHANGE_HOSTNAME_RESPONSE == "Y" ]] || [[ $CHANGE_HOSTNAME_RESPONSE == "y" ]]; then
     echo "You should reboot the system after changing the hostname."
 	echo "System will reboot in 10 seconds."
 	sleep 10
