@@ -32,6 +32,7 @@ Note: This script will require input for `make menuconfig` during the Klipper in
 * ~~Installer will only report a wireless IP address at the end. If you have a wired connection, it won\'t display an address.~~  
 * ~~Error detection isn\'t terribly robust.~~  
 * There are not currently any default configs for V0 or V1. Wget will fail in these instances.
+* If you try to use a PiCam, mjpg-streamer will fail to start. Enable the camera with `sudo raspi-config` and restart.
 
 # To Do List
 * ~~Clean up `printer.cfg` handling~~  
@@ -41,3 +42,4 @@ Note: This script will require input for `make menuconfig` during the Klipper in
 * ~~Add MJPEG install & configure webcam~~  
 * Validate IP address input  
 * Add V0 and V1 printer.cfg links when available
+* Add PiCam support
