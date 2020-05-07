@@ -8,6 +8,8 @@ SYSTEM_IP="$(ip route get 1.1.1.1 | awk '{print $7}' | head -n1)"
 MAINSAIL_FILE="https://github.com/meteyou/mainsail/releases/download/v0.0.9/mainsail-alpha-0.0.9.zip"
 GUI_JSON="{\"webcam\":{\"url\":\"http://${SYSTEM_IP}:8081/?action=stream\"},\"gui\":{\"dashboard\":{\"boolWebcam\":true,\"boolTempchart\":true,\"boolConsole\":false,\"hiddenMacros\":[]},\"webcam\":{\"bool\":false},\"gcodefiles\":{\"countPerPage\":10}}}"
 CURRENT_HOSTNAME="$(hostname)"
+KLIPPER_DIR=/home/pi/klipper
+KLIPPER_CONFIG_FRAGMENT=${KLIPPER_DIR}/.config_fragment
 V0_CONFIG=""
 V1_250_CONFIG=""
 V1_300_CONFIG=""
@@ -119,6 +121,15 @@ get_inputs()
     CHANGE_HOSTNAME_RESPONSE="N"
   fi
   
+  MCU_SETUP_RESPONSE=$(whiptail --title "Select MCU" --menu "Which MCU do you need to prepare Klipper for? This will selection will run make menuconfig in the background." 16 70 7 \
+      "SKR" "Bigtreetech SKR 1.3, SKR 1.4, SKR Mini E3" \
+      "RAMPS" "RAMPs 1.4 or variant" \
+      "Duet" "Duet or Duet Wifi" \
+      "Einsy" "Einsy Rambo" \
+      "F6" "FYSETC F6" \
+      "sBase" "MKS sBase" 3>&2 2>&1 1>&3
+    )
+  
   if (whiptail --title "Verify printer.cfg" --yesno "Do you already have a working printer.cfg you will use for this setup?" 8 78); then
     whiptail --title "Verify printer.cfg" --msgbox "Ensure your printer.cfg is already copied to /home/pi before continuing." 8 78
   else
@@ -177,12 +188,12 @@ get_inputs()
     ;;
   esac   
  
-  whiptail --title "IMPORTANT NOTICE" --msgbox "This installer will take several minutes to complete.\nUser input is required during the primary Klipper install but is otherwise completely automated.\nYou should be able to access Mainsail in your browser at ${SYSTEM_IP} after the install completes." 10 105
+  whiptail --title "IMPORTANT NOTICE" --msgbox "This installer will take several minutes to complete.\nYou should be able to access Mainsail in your browser at ${SYSTEM_IP} after the install completes." 10 105
 }
 
 verify_inputs()
 {
-  if (whiptail --title "Verify Settings" --yesno "Please confirm the installer settings before continuing:\n\nIP whitelist for Web UI: $IP_ADDRESS_RESPONSE\nConfigure mjpeg-streamer: $WEBCAM_SETUP_RESPONSE\nChange system hostname: $CHANGE_HOSTNAME_RESPONSE" 12 78); then
+  if (whiptail --title "Verify Settings" --yesno "Please confirm the installer settings before continuing:\n\nIP whitelist for Web UI: $IP_ADDRESS_RESPONSE\nConfigure mjpeg-streamer: $WEBCAM_SETUP_RESPONSE\nChange system hostname: $CHANGE_HOSTNAME_RESPONSE\nMCU firmware version: $MCU_SETUP_RESPONSE" 12 78); then
     echo
     echo
     echo "#################"
@@ -192,6 +203,104 @@ verify_inputs()
   else
     get_inputs
   fi
+}
+
+do_lpc_config() {
+  echo
+  echo "DO LPC CONFIG"
+  echo
+  cat <<'EOF' >> ${KLIPPER_CONFIG_FRAGMENT}
+CONFIG_MACH_LPC176X=y
+CONFIG_STEP_DELAY=2
+CONFIG_BOARD_DIRECTORY="lpc176x"
+CONFIG_MCU="lpc1768"
+CONFIG_CLOCK_FREQ=100000000
+CONFIG_USBSERIAL=y
+CONFIG_FLASH_START=0x4000
+CONFIG_FLASH_SIZE=0x80000
+CONFIG_RAM_START=0x10000000
+CONFIG_RAM_SIZE=0x7fe0
+CONFIG_STACK_SIZE=512
+CONFIG_LPC_SELECT=y
+CONFIG_MACH_LPC1768=y
+CONFIG_SMOOTHIEWARE_BOOTLOADER=y
+CONFIG_USB_VENDOR_ID=0x2341
+CONFIG_USB_DEVICE_ID=0xabcd
+CONFIG_USB_SERIAL_NUMBER_CHIPID=y
+CONFIG_USB_SERIAL_NUMBER="12345"
+CONFIG_HAVE_GPIO=y
+CONFIG_HAVE_GPIO_ADC=y
+CONFIG_HAVE_GPIO_SPI=y
+CONFIG_HAVE_GPIO_I2C=y
+CONFIG_HAVE_GPIO_BITBANGING=y
+CONFIG_HAVE_CHIPID=y
+CONFIG_INLINE_STEPPER_HACK=y
+EOF
+}
+
+do_duet_config() {
+  echo
+  echo "DO DUETWIFI CONFIG"
+  echo
+  cat <<'EOF' >> ${KLIPPER_CONFIG_FRAGMENT}
+CONFIG_MACH_ATSAM=y
+CONFIG_STEP_DELAY=2
+CONFIG_BOARD_DIRECTORY="atsam"
+CONFIG_MCU="sam4e8e"
+CONFIG_CLOCK_FREQ=120000000
+CONFIG_USBSERIAL=y
+CONFIG_ATSAM_SELECT=y
+CONFIG_MACH_SAM4E8E=y
+CONFIG_MACH_SAM4=y
+CONFIG_MACH_SAM4E=y
+CONFIG_FLASH_START=0x400000
+CONFIG_FLASH_SIZE=0x80000
+CONFIG_RAM_START=0x20000000
+CONFIG_RAM_SIZE=0x20000
+CONFIG_STACK_SIZE=512
+CONFIG_USB_VENDOR_ID=0x2341
+CONFIG_USB_DEVICE_ID=0xabcd
+CONFIG_USB_SERIAL_NUMBER_CHIPID=y
+CONFIG_USB_SERIAL_NUMBER="12345"
+CONFIG_HAVE_GPIO=y
+CONFIG_HAVE_GPIO_ADC=y
+CONFIG_HAVE_GPIO_SPI=y
+CONFIG_HAVE_GPIO_I2C=y
+CONFIG_HAVE_GPIO_HARD_PWM=y
+CONFIG_HAVE_GPIO_BITBANGING=y
+CONFIG_HAVE_CHIPID=y
+CONFIG_INLINE_STEPPER_HACK=y
+EOF
+}
+
+do_avr_config() {
+  echo
+  echo "DO AVR CONFIG"
+  echo
+  cat <<'EOF' >> ${KLIPPER_CONFIG_FRAGMENT}
+CONFIG_MACH_AVR=y
+CONFIG_AVR_SELECT=y
+CONFIG_STEP_DELAY=-1
+CONFIG_BOARD_DIRECTORY="avr"
+CONFIG_MACH_atmega2560=y
+CONFIG_MCU="atmega2560"
+CONFIG_AVRDUDE_PROTOCOL="wiring"
+CONFIG_CLOCK_FREQ=16000000
+CONFIG_AVR_CLKPR=-1
+CONFIG_AVR_STACK_SIZE=256
+CONFIG_AVR_WATCHDOG=y
+CONFIG_SERIAL=y
+CONFIG_SERIAL_BAUD_U2X=y
+CONFIG_SERIAL_PORT=0
+CONFIG_SERIAL_BAUD=250000
+CONFIG_HAVE_GPIO=y
+CONFIG_HAVE_GPIO_ADC=y
+CONFIG_HAVE_GPIO_SPI=y
+CONFIG_HAVE_GPIO_I2C=y
+CONFIG_HAVE_GPIO_HARD_PWM=y
+CONFIG_HAVE_GPIO_BITBANGING=y
+CONFIG_INLINE_STEPPER_HACK=y
+EOF
 }
 
 install_packages()
@@ -208,12 +317,12 @@ install_packages()
   sudo apt update && sudo apt upgrade -y
   echo
   echo
-  echo "##############"
-  echo "Installing git"
-  echo "##############"
+  echo "###################"
+  echo "Installing packages"
+  echo "###################"
   echo
   sleep .5
-  sudo apt install git -y
+  sudo apt install git lua5.1 -y
 }
 
 install_printer_config()
@@ -277,9 +386,29 @@ install_klipper()
   /home/pi/klipper/scripts/install-octopi.sh
   
   echo "Building and Flashing the MCU"
-  cd /home/pi/klipper
-  make menuconfig
+  cd $KLIPPER_DIR
+  #make menuconfig
+  
+  case "$MCU_SETUP_RESPONSE" in
+    "RAMPS") do_avr_config ;;
+    "SKR") do_lpc_config ;;
+    "Duet") do_duet_config ;;
+    "Einsy") do_avr_config ;;
+    "sBase") do_lpc_config ;;
+    "F6") do_avr_config ;;
+  esac
+    
+  #do_lpc_config
+    
+  scripts/kconfig/merge_config.sh $KLIPPER_CONFIG_FRAGMENT
+  make clean
   make
+  
+  RET=$?
+  if [ $RET -ne 0 ]; then
+    whipstd --msgbox "Klipper build failed?!" 8 60
+  fi
+  
   sudo service klipper stop
 }
   
@@ -397,15 +526,15 @@ install_mainsail()
   wget -q -O mainsail.zip ${MAINSAIL_FILE} && unzip mainsail.zip && rm mainsail.zip
 }
 
-setup_webcam()
+install_mjpg_streamer()
 {
   
   if [[ $WEBCAM_SETUP_RESPONSE == "Y" ]] || [[ $WEBCAM_SETUP_RESPONSE == "y" ]]; then
     echo
     echo
-    echo "#########################"
-    echo "Installing mjpeg-streamer"
-    echo "#########################"
+    echo "########################"
+    echo "Installing mjpg-streamer"
+    echo "########################"
     echo
     sleep .5
     sudo apt-get install build-essential imagemagick libv4l-dev libjpeg-dev cmake -y
@@ -473,6 +602,6 @@ test_api
 install_nginx
 test_nginx
 install_mainsail
-setup_webcam
+install_mjpg_streamer
 set_hostname
 display_info_finish
