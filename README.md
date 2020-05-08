@@ -1,7 +1,7 @@
 # mainsail-installer
 This is an install script to setup [Klipper](https://github.com/KevinOConnor/klipper), the [Klipper API](https://github.com/Arksine/klipper/tree/work-web_server-20200131), and the [Web Interface](https://github.com/meteyou/mainsail) on a clean SD card image with Raspbian. The installer will also install mjpg-streamer, add the camera URL to the webUI, and let you set the system hostname.
 
-Thanks to tinpec for cleaning up the first pass of my ASCII art :)
+Thanks to tinpec for cleaning up the first pass of my ASCII art and Fulg for bypassing the manual `make menuconfig` in klipper :)
 
 # How to Install
 Flash an SD card with the Raspbian image.  
