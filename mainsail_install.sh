@@ -18,16 +18,14 @@ V2_300_CONFIG="https://raw.githubusercontent.com/VoronDesign/Voron-2/Voron2.4/fi
 V2_350_CONFIG="https://raw.githubusercontent.com/VoronDesign/Voron-2/Voron2.4/firmware/klipper_configurations/VORON2_stock_350_printer.cfg"
 
 
-verify_ready()
-{
+verify_ready() {
   if [ "$EUID" -eq 0 ]; then
     echo "This script must not run as root"
     exit -1
   fi
 }
 
-ascii_art()
-{
+ascii_art() {
   echo -e "
   ${COL_NONE}
              ██╗  ██╗██╗     ██╗██████╗ ██████╗ ███████╗██████╗ 
@@ -94,8 +92,7 @@ ascii_art()
   sleep 2
 }
 
-clean_image_warning()
-{
+clean_image_warning() {
   if (whiptail --title "Confirm Install" --yesno "This installer is intended to run on a clean Raspbian image. Do you want to continue?" 8 78); then
   CONTINUE_INSTALL="Y"
   else
@@ -103,9 +100,8 @@ clean_image_warning()
   fi
 }
 
-get_inputs()
-{
-  IP_ADDRESS_RESPONSE=$(whiptail --title "Provide IP Address" --inputbox "Please provide your IP address.\nThis will be used to allow access to the Web UI.\nYou can provide an address range using CIDR notation to whitelist an entire subnet.\nIf you want to whitelist a specific client provide just that client's IP address.\nYou can edit this later in your printer.cfg under the remote_api section." 12 90 "192.168.0.0/24" 3>&1 1>&2 2>&3)
+get_inputs() {
+  IP_ADDRESS_RESPONSE=$(whiptail --title "Provide IP Address" --inputbox "Please provide your IP address.\nThis will be used to allow access to the Web UI.\nYou can provide an address range using CIDR notation to whitelist an entire subnet.\nIf you want to whitelist a specific client provide just that client's IP address.\nYou can edit this later in your printer.cfg under the api_server section." 12 90 "192.168.0.0/24" 3>&1 1>&2 2>&3)
   
   if (whiptail --title "Setup Webcam" --yesno "Do you want to setup mjpeg-streamer to use a webcam?" 8 78); then
     WEBCAM_SETUP_RESPONSE="Y"
@@ -191,8 +187,7 @@ get_inputs()
   whiptail --title "IMPORTANT NOTICE" --msgbox "This installer will take several minutes to complete.\nYou should be able to access Mainsail in your browser at ${SYSTEM_IP} after the install completes." 10 105
 }
 
-verify_inputs()
-{
+verify_inputs() {
   if (whiptail --title "Verify Settings" --yesno "Please confirm the installer settings before continuing:\n\nIP whitelist for Web UI: $IP_ADDRESS_RESPONSE\nConfigure mjpeg-streamer: $WEBCAM_SETUP_RESPONSE\nChange system hostname: $CHANGE_HOSTNAME_RESPONSE\nMCU firmware version: $MCU_SETUP_RESPONSE" 12 78); then
     echo
     echo
@@ -303,8 +298,7 @@ CONFIG_INLINE_STEPPER_HACK=y
 EOF
 }
 
-install_packages()
-{  
+install_packages() {  
   cd /home/pi
   
   echo
@@ -325,8 +319,7 @@ install_packages()
   sudo apt install git lua5.1 -y
 }
 
-install_printer_config()
-{  
+install_printer_config() {  
   echo
   echo
   echo "########################"
@@ -337,7 +330,7 @@ install_printer_config()
     
   if [ -e "/home/pi/printer.cfg" ]; then  
   echo "Printer.cfg exists"
-    echo "Verifying virtual_sdcard and remote_api are enabled"
+    echo "Verifying virtual_sdcard and api_server are enabled"
 	if [ -e "/home/pi/mainsail-installer/empty_printer.cfg" ]; then
       rm /home/pi/mainsail-installer/empty_printer.cfg
     fi
@@ -352,12 +345,12 @@ install_printer_config()
     echo "path: /home/pi/sdcard" >> /home/pi/printer.cfg
   fi
   
-  if [[ $(cat /home/pi/printer.cfg | grep \\[remote_api]) == '[remote_api]' ]]; then
-    echo "Remote API is already configured"
+  if [[ $(cat /home/pi/printer.cfg | grep \\[api_server]) == '[api_server]' ]]; then
+    echo "API Server is already configured"
   else
-    echo "Remote API is not configured in printer.cfg"
-    echo "Configuring Remote API"
-    echo $'\n\n[remote_api]' >> /home/pi/printer.cfg
+    echo "API Server is not configured in printer.cfg"
+    echo "Configuring API Server"
+    echo $'\n\n[api_server]' >> /home/pi/printer.cfg
     echo "trusted_clients:" >> /home/pi/printer.cfg
     echo " $IP_ADDRESS_RESPONSE" >> /home/pi/printer.cfg
     echo " 127.0.0.0/24" >> /home/pi/printer.cfg
@@ -373,8 +366,7 @@ install_printer_config()
   fi
 }
 
-install_klipper()
-{
+install_klipper() {
   echo
   echo
   echo "##################"
@@ -412,8 +404,7 @@ install_klipper()
   sudo service klipper stop
 }
   
-install_api()
-{
+install_api() {
   echo
   echo
   echo "###########################"
@@ -425,16 +416,18 @@ install_api()
   git remote add arksine https://github.com/Arksine/klipper.git
   git fetch arksine
   git checkout arksine/work-web_server-20200131
-  /home/pi/klippy-env/bin/pip install tornado
-  
+  cd /home/pi/klipper
+  sudo service klipper stop
+  git clean -x -d -n
+  /home/pi/klipper/scripts/install-moonraker.sh
+  #/home/pi/klippy-env/bin/pip install tornado
   echo "Creating Virtual SD"
   sleep .5
   mkdir /home/pi/sdcard
   sudo service klipper restart
 }
 
-test_api()
-{  
+test_api() {  
   echo
   echo
   echo "###################"
@@ -457,8 +450,7 @@ test_api()
   fi
 }
 
-install_nginx()
-{  
+install_nginx() {  
   echo
   echo
   echo "###########################################"
@@ -484,8 +476,7 @@ install_nginx()
   fi
 }
 
-test_nginx()
-{  
+test_nginx() {  
   sudo service nginx restart
   echo
   echo
@@ -513,8 +504,7 @@ test_nginx()
   echo
 }
 
-install_mainsail()
-{  
+install_mainsail() {  
   echo
   echo
   echo "###################################"
@@ -526,10 +516,9 @@ install_mainsail()
   wget -q -O mainsail.zip ${MAINSAIL_FILE} && unzip mainsail.zip && rm mainsail.zip
 }
 
-install_mjpg_streamer()
-{
+install_mjpg_streamer() {
   
-  if [[ $WEBCAM_SETUP_RESPONSE == "Y" ]] || [[ $WEBCAM_SETUP_RESPONSE == "y" ]]; then
+  if [[ $WEBCAM_SETUP_RESPONSE == "Y" ]]; then
     echo
     echo
     echo "########################"
@@ -553,9 +542,8 @@ install_mjpg_streamer()
   fi
 }
 
-set_hostname()
-{
-  if [[ $CHANGE_HOSTNAME_RESPONSE == "Y" ]] || [[ $CHANGE_HOSTNAME_RESPONSE == "y" ]]; then
+set_hostname() {
+  if [[ $CHANGE_HOSTNAME_RESPONSE == "Y" ]]; then
     echo
     echo
     echo "Setting hostname to $NEW_HOSTNAME"
@@ -565,8 +553,7 @@ set_hostname()
   fi
 }
 
-display_info_finish()
-{  
+display_info_finish() {  
   if [[ $ERROR == 0 ]]; then
     echo
     echo
