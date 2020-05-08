@@ -1,7 +1,15 @@
 # mainsail-installer
-This is an install script to setup [Klipper](https://github.com/KevinOConnor/klipper), the [Klipper API](https://github.com/Arksine/klipper/tree/work-web_server-20200131), and the [Web Interface](https://github.com/meteyou/mainsail) on a clean SD card image with Raspbian. The installer will also install mjpg-streamer, add the camera URL to the webUI, and let you set the system hostname.
-
+This is an install script to setup [Klipper](https://github.com/KevinOConnor/klipper), the [Klipper API](https://github.com/Arksine/klipper/tree/work-web_server-20200131), and the [Web Interface](https://github.com/meteyou/mainsail) on a clean SD card image with Raspbian.  
 Thanks to tinpec for cleaning up the first pass of my ASCII art and Fulg for bypassing the manual `make menuconfig` in klipper :)
+
+# What does this installer do?  
+The installer will install Klipper, the Klipper API, and the Web Interface.  
+
+You will have the option to download a sample Voron config from Github for your printer\'s model or use your own config. If no config is supplied, a sparse config will be used to allow the Web UI to start.  
+
+The installer will automatically compile the MCU firmware for the controller you select. It will not attempt to flash the MCU.  
+
+You will also have the option to setup mjpg-streamer and change the system hostname.  
 
 # How to Install
 Flash an SD card with the Raspbian image.  

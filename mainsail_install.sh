@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # This will install Mainsail for Klipper on a clean Raspbian image
 
 COL_RED='\e[0;31m'
@@ -92,9 +92,66 @@ ascii_art() {
   sleep 2
 }
 
+set_config_var() {
+  lua - "$1" "$2" "$3" <<EOF > "$3.bak"
+local key=assert(arg[1])
+local value=assert(arg[2])
+local fn=assert(arg[3])
+local file=assert(io.open(fn))
+local made_change=false
+for line in file:lines() do
+  if line:match("^#?%s*"..key.."=.*$") then
+    line=key.."="..value
+    made_change=true
+  end
+  print(line)
+end
+
+if not made_change then
+  print(key.."="..value)
+end
+EOF
+mv "$3.bak" "$3"
+}
+
+clear_config_var() {
+  lua - "$1" "$2" <<EOF > "$2.bak"
+local key=assert(arg[1])
+local fn=assert(arg[2])
+local file=assert(io.open(fn))
+for line in file:lines() do
+  if line:match("^%s*"..key.."=.*$") then
+    line="#"..line
+  end
+  print(line)
+end
+EOF
+mv "$2.bak" "$2"
+}
+
+get_config_var() {
+  lua - "$1" "$2" <<EOF
+local key=assert(arg[1])
+local fn=assert(arg[2])
+local file=assert(io.open(fn))
+local found=false
+for line in file:lines() do
+  local val = line:match("^%s*"..key.."=(.*)$")
+  if (val ~= nil) then
+    print(val)
+    found=true
+    break
+  end
+end
+if not found then
+   print(0)
+end
+EOF
+}
+
 clean_image_warning() {
   if (whiptail --title "Confirm Install" --yesno "This installer is intended to run on a clean Raspbian image. Do you want to continue?" 8 78); then
-  CONTINUE_INSTALL="Y"
+    CONTINUE_INSTALL="Y"
   else
     exit 0
   fi
@@ -329,32 +386,34 @@ install_printer_config() {
   sleep .5
     
   if [ -e "/home/pi/printer.cfg" ]; then  
-  echo "Printer.cfg exists"
+    echo "Printer.cfg exists"
     echo "Verifying virtual_sdcard and api_server are enabled"
 	if [ -e "/home/pi/mainsail-installer/empty_printer.cfg" ]; then
       rm /home/pi/mainsail-installer/empty_printer.cfg
     fi
     sleep .5
-  
-  if [[ $(cat /home/pi/printer.cfg | grep \\[virtual_sdcard]) == '[virtual_sdcard]' ]]; then
-    echo "Virtual SDcard is already configured"
-  else
-    echo "Virtual SDcard is not configured in printer.cfg"
-    echo "Configuring Virtual SDcard"
-    echo $'\n\n[virtual_sdcard]' >> /home/pi/printer.cfg
-    echo "path: /home/pi/sdcard" >> /home/pi/printer.cfg
-  fi
-  
-  if [[ $(cat /home/pi/printer.cfg | grep \\[api_server]) == '[api_server]' ]]; then
-    echo "API Server is already configured"
-  else
-    echo "API Server is not configured in printer.cfg"
-    echo "Configuring API Server"
-    echo $'\n\n[api_server]' >> /home/pi/printer.cfg
-    echo "trusted_clients:" >> /home/pi/printer.cfg
-    echo " $IP_ADDRESS_RESPONSE" >> /home/pi/printer.cfg
-    echo " 127.0.0.0/24" >> /home/pi/printer.cfg
-  fi
+
+    if [ $(grep '^\[virtual_sdcard\]$' /home/pi/printer.cfg) ]; then
+      echo "Virtual SDcard is already configured"
+    else
+      echo "Virtual SDcard is not configured in printer.cfg"
+      echo "Configuring Virtual SDcard"
+      printf "\n\n" >> /home/pi/printer.cfg
+	  echo "[virtual_sdcard]" >> /home/pi/printer.cfg
+      echo "path: /home/pi/sdcard" >> /home/pi/printer.cfg
+    fi
+    
+    if [ $(grep '^\[api_server\]$' /home/pi/printer.cfg) ]; then
+      echo "API Server is already configured"
+    else
+      echo "API Server is not configured in printer.cfg"
+      echo "Configuring API Server"
+      printf "\n\n" >> /home/pi/printer.cfg
+	  echo "[api_server]" >> /home/pi/printer.cfg
+      echo "trusted_clients:" >> /home/pi/printer.cfg
+      echo " $IP_ADDRESS_RESPONSE" >> /home/pi/printer.cfg
+      echo " 127.0.0.0/24" >> /home/pi/printer.cfg
+    fi
   
   else
     echo "Printer.cfg does not exist"
@@ -379,7 +438,7 @@ install_klipper() {
   
   echo "Building and Flashing the MCU"
   cd $KLIPPER_DIR
-  #make menuconfig
+				  
   
   case "$MCU_SETUP_RESPONSE" in
     "RAMPS") do_avr_config ;;
@@ -389,9 +448,7 @@ install_klipper() {
     "sBase") do_lpc_config ;;
     "F6") do_avr_config ;;
   esac
-    
-  #do_lpc_config
-    
+  
   scripts/kconfig/merge_config.sh $KLIPPER_CONFIG_FRAGMENT
   make clean
   make
@@ -408,7 +465,7 @@ install_api() {
   echo
   echo
   echo "###########################"
-  echo "Configuring the Klipper-API"
+  echo "Configuring the Klipper API"
   echo "###########################"
   echo
   sleep .5
@@ -420,7 +477,6 @@ install_api() {
   sudo service klipper stop
   git clean -x -d -n
   /home/pi/klipper/scripts/install-moonraker.sh
-  #/home/pi/klippy-env/bin/pip install tornado
   echo "Creating Virtual SD"
   sleep .5
   mkdir /home/pi/sdcard
@@ -441,7 +497,7 @@ test_api() {
   echo
   echo
   
-  if [[ ${API_RESPONSE:0:10} == "{\"result\":" ]]; then
+  if [ $(curl -sG4 "http://localhost:7125/printer/info" | grep '^{"result"' -c) = 1 ]; then
     echo "The Klipper API service is working correctly"
   else
     echo "The Klipper API service is not working correctly"
@@ -462,7 +518,6 @@ install_nginx() {
   sudo mv /home/pi/mainsail-installer/nginx.cfg /etc/nginx/sites-available/mainsail
   sudo chown pi:pi /etc/nginx/sites-available/mainsail
   sudo chmod 644 /etc/nginx/sites-available/mainsail
-  
   echo "Creating directory for static files"
   sleep .5
   mkdir /home/pi/mainsail
@@ -491,7 +546,7 @@ test_nginx() {
   echo
   echo
   
-  if [[ ${API_RESPONSE:0:10} == "{\"result\":" ]]; then
+  if [ $(curl -sG4 "http://localhost:7125/printer/info" | grep '^{"result"' -c) = 1 ]; then
     echo "Nginx is configured correctly"
     sleep 2
   else
@@ -518,7 +573,7 @@ install_mainsail() {
 
 install_mjpg_streamer() {
   
-  if [[ $WEBCAM_SETUP_RESPONSE == "Y" ]]; then
+  if [ $WEBCAM_SETUP_RESPONSE = "Y" ]; then
     echo
     echo
     echo "########################"
@@ -543,18 +598,18 @@ install_mjpg_streamer() {
 }
 
 set_hostname() {
-  if [[ $CHANGE_HOSTNAME_RESPONSE == "Y" ]]; then
+  if [ $CHANGE_HOSTNAME_RESPONSE = "Y" ]; then
     echo
     echo
     echo "Setting hostname to $NEW_HOSTNAME"
-  sudo sed -i -e 's/${CURRENT_HOSTNAME}/${HOSTNAME}/g' /etc/hostname
+    sudo sed -i -e 's/${CURRENT_HOSTNAME}/${HOSTNAME}/g' /etc/hostname
     sudo sed -i "s/127.0.1.1.*$CURRENT_HOSTNAME/127.0.1.1\t$NEW_HOSTNAME/g" /etc/hosts
     sudo hostnamectl set-hostname $NEW_HOSTNAME
   fi
 }
 
 display_info_finish() {  
-  if [[ $ERROR == 0 ]]; then
+  if [ $ERROR = 0 ]; then
     echo
     echo
     echo "The installer did not detect any errors."
@@ -567,7 +622,7 @@ display_info_finish() {
     echo ${NGINX_ERROR}
   fi
   
-  if [[ $CHANGE_HOSTNAME_RESPONSE == "Y" ]] || [[ $CHANGE_HOSTNAME_RESPONSE == "y" ]]; then
+  if [ $CHANGE_HOSTNAME_RESPONSE = "Y" ]; then
     echo "You should reboot the system after changing the hostname."
     echo "System will reboot in 10 seconds."
     sleep 10
