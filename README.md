@@ -9,7 +9,7 @@ You will have the option to download a sample Voron config from Github for your 
 
 The installer will automatically compile the MCU firmware for the controller you select. It will not attempt to flash the MCU.  
 
-You will also have the option to setup mjpg-streamer and change the system hostname.  
+You will also have the option to setup mjpg-streamer, change the system hostname, and configure timezone.  
 
 # How to Install
 Flash an SD card with the Raspbian image.  

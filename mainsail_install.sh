@@ -174,6 +174,13 @@ get_inputs() {
     CHANGE_HOSTNAME_RESPONSE="N"
   fi
   
+  if (whiptail --title "Change Timezone" --yesno "Do you want to change the timezone? This will allow the Web UI to show correct times in various locations. The current timezone is $(cat /etc/timezone)." 8 78); then
+    CHANGE_TIMEZONE_RESPONSE="Y"
+    sudo dpkg-reconfigure tzdata
+  else
+    CHANGE_TIMEZONE_RESPONSE="N"
+  fi
+  
   MCU_SETUP_RESPONSE=$(whiptail --title "Select MCU" --menu "Which MCU do you need to prepare Klipper for? This will selection will run make menuconfig in the background." 16 70 7 \
       "SKR" "Bigtreetech SKR 1.3, SKR 1.4, SKR Mini E3" \
       "RAMPS" "RAMPs 1.4 or variant" \
