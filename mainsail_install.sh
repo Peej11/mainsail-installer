@@ -158,7 +158,7 @@ clean_image_warning() {
 }
 
 get_inputs() {
-  IP_ADDRESS_RESPONSE=$(whiptail --title "Provide IP Address" --inputbox "Please provide your IP address.\nThis will be used to allow access to the Web UI.\nYou can provide an address range using CIDR notation to whitelist an entire subnet.\nIf you want to whitelist a specific client provide just that client's IP address.\nYou can edit this later in your printer.cfg under the api_server section." 12 90 "192.168.0.0/24" 3>&1 1>&2 2>&3)
+  IP_ADDRESS_RESPONSE=$(whiptail --title "Provide IP Address" --inputbox "Provide a single IP address or an address range in 24-bit CIDR notation to allow trusted clients in the printer.cfg file. The default value below will whitelist all addresses between 192.168.0.1 - 192.168.1.254. This will allow Web UI access as well as full access to the API from any host in this range. You can edit this later or add additional ranges in your printer.cfg under the api_server section." 13 90 "192.168.0.0/24" 3>&1 1>&2 2>&3)
   
   if (whiptail --title "Setup Webcam" --yesno "Do you want to setup mjpeg-streamer to use a webcam?" 8 78); then
     WEBCAM_SETUP_RESPONSE="Y"
