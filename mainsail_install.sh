@@ -174,7 +174,7 @@ get_inputs() {
     CHANGE_HOSTNAME_RESPONSE="N"
   fi
   
-  if (whiptail --title "Change Timezone" --yesno "Do you want to change the timezone? This will allow the Web UI to show correct times in various locations. The current timezone is $(cat /etc/timezone)." 8 78); then
+  if (whiptail --title "Change Timezone" --yesno "Do you want to change the timezone? This will allow the Web UI to show correct times in various locations. The current timezone is $(cat /etc/timezone)." 9 78); then
     CHANGE_TIMEZONE_RESPONSE="Y"
     sudo dpkg-reconfigure tzdata
   else
