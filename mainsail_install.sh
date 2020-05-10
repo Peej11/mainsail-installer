@@ -199,7 +199,7 @@ get_timezone_response() {
 }
 
 get_mcu_response() {
-  MCU_SETUP_RESPONSE=$(whiptail --title "Select MCU" --menu "Which MCU do you need to prepare Klipper for? This will selection will run make menuconfig in the background." 16 70 7 \
+  MCU_SETUP_RESPONSE=$(whiptail --title "Select MCU" --menu "Which MCU do you need to prepare Klipper for? This selection will run make menuconfig in the background." 16 70 7 \
       "SKR" "Bigtreetech SKR 1.3, SKR 1.4, SKR Mini E3" \
       "RAMPS" "RAMPs 1.4 or variant" \
       "Duet" "Duet or Duet Wifi" \
