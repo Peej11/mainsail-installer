@@ -3,18 +3,21 @@ This is an install script to setup [Klipper](https://github.com/KevinOConnor/kli
 Thanks to tinpec for cleaning up the first pass of my ASCII art and Fulg for bypassing the manual `make menuconfig` in klipper :)
 
 # What does this installer do?  
-The installer will install Klipper, the Klipper API, and the Web Interface.  
+The installer will give you the option to configure several common items from running `sudo raspi-config`: change password, change hostname, and configure timezone. Hostname and timezone do impact how the Web UI displays information.
 
-You will have the option to download a sample Voron config from Github for your printer\'s model or use your own config. If no config is supplied, a sparse config will be used to allow the Web UI to start.  
+You will be prompted to download a sample Voron config from Github for your printer\'s model if you don\'t already have a config. There is a sparse config as a backup to allow the Web UI to start.  
+
+The installer will install Klipper, the Klipper API, and the Web Interface.  
 
 The installer will automatically compile the MCU firmware for the controller you select. It will not attempt to flash the MCU.  
 
-You will also have the option to setup mjpg-streamer, change the system hostname, and configure timezone.  
+The installer will provide the option to setup mjpg-streamer if you want to use a webcam. If selected, it will also configure the Web UI to display the camera feed.  
 
 # How to Install
-Flash an SD card with the Raspbian image.  
-Be sure to place a file named `ssh` to enable SSH.  
-Create a file called `wpa_supplicant.conf` and add the contents to configure wireless access.  
+Flash an SD card with the Raspbian image from [here](https://www.raspberrypi.org/downloads/raspbian/).  
+Be sure to place a file named `ssh` on the /boot partition to enable SSH.  
+Create a file called `wpa_supplicant.conf` on the /boot partition and add the contents to configure wireless access.  
+
 Sample contents look like this:  
 
     country=US
@@ -27,6 +30,7 @@ Sample contents look like this:
      psk="<YOUR_WIRELESS_PASSWORD>"
     }  
 
+Boot and SSH into your pi. Default credentials are pi/raspberry.  
 Copy the contents of this repository to ~/mainsail-installer on the pi.  
 Copy a working `printer.cfg` to your home directory. (The script will copy a sparse `printer.cfg` if no config is detected to allow the UI to connect to Klipper.)  
 Run `chmod +x ~/mainsail-installer/mainsail-installer.sh` to make executable.  

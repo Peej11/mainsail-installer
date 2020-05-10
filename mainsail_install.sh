@@ -157,30 +157,48 @@ clean_image_warning() {
   fi
 }
 
-get_inputs() {
-  IP_ADDRESS_RESPONSE=$(whiptail --title "Provide IP Address" --inputbox "Provide a single IP address or an address range in 24-bit CIDR notation to allow trusted clients in the printer.cfg file. The default value below will whitelist all addresses between 192.168.0.1 - 192.168.1.254. This will allow Web UI access as well as full access to the API from any host in this range. You can edit this later or add additional ranges in your printer.cfg under the api_server section." 13 90 "192.168.0.0/24" 3>&1 1>&2 2>&3)
-  
+get_password_response() {
+  if [ -e /run/sshwarn ] && [ $(echo $USER | grep pi -c) = 1 ]; then
+    if (whiptail --title "Change Password" --yesno "You should change the default password with SSH enabled. This is a security risk. Do you want to change your password?" 8 78); then
+      passwd
+    else
+      CHANGE_PASSWORD_RESPONSE="N"
+    fi
+  fi
+}
+
+get_ip_response() {
+  IP_ADDRESS_RESPONSE=$(whiptail --title "Provide IP Address" --inputbox "Provide a single IP address or an address range in 24-bit CIDR notation to allow trusted clients in the printer.cfg file. The default value below will whitelist all addresses between 192.168.0.1 - 192.168.1.254. This will allow Web UI access as well as full access to the API from any host in this range. You can edit this later or add additional ranges in your printer.cfg under the api_server section." 15 78 "192.168.0.0/24" 3>&1 1>&2 2>&3)
+}
+
+get_webcam_response() {
   if (whiptail --title "Setup Webcam" --yesno "Do you want to setup mjpeg-streamer to use a webcam?" 8 78); then
     WEBCAM_SETUP_RESPONSE="Y"
   whiptail --title "Verify Webcam" --msgbox "You must have your webcam connected or the mjpeg-streamer service won't start." 8 78
   else
     WEBCAM_SETUP_RESPONSE="N"
   fi
-  
-  if (whiptail --title "Change Hostname" --yesno "Do you want to change the system hostname?" 8 78); then
+}
+
+get_hostname_response() {
+if (whiptail --title "Change Hostname" --yesno "Do you want to change the system hostname?" 8 78); then
     CHANGE_HOSTNAME_RESPONSE="Y"
     NEW_HOSTNAME=$(whiptail --title "Hostname" --inputbox "Please provide a hostname." 8 78 3>&1 1>&2 2>&3)
   else
     CHANGE_HOSTNAME_RESPONSE="N"
   fi
-  
+}
+
+get_timezone_response() {
   if (whiptail --title "Change Timezone" --yesno "Do you want to change the timezone? This will allow the Web UI to show correct times in various locations. The current timezone is $(cat /etc/timezone)." 9 78); then
     CHANGE_TIMEZONE_RESPONSE="Y"
     sudo dpkg-reconfigure tzdata
   else
     CHANGE_TIMEZONE_RESPONSE="N"
   fi
-  
+}
+
+get_mcu_response() {
   MCU_SETUP_RESPONSE=$(whiptail --title "Select MCU" --menu "Which MCU do you need to prepare Klipper for? This will selection will run make menuconfig in the background." 16 70 7 \
       "SKR" "Bigtreetech SKR 1.3, SKR 1.4, SKR Mini E3" \
       "RAMPS" "RAMPs 1.4 or variant" \
@@ -188,8 +206,10 @@ get_inputs() {
       "Einsy" "Einsy Rambo" \
       "F6" "FYSETC F6" \
       "sBase" "MKS sBase" 3>&2 2>&1 1>&3
-    )
-  
+  )
+}
+
+get_printer_config_response() {
   if (whiptail --title "Verify printer.cfg" --yesno "Do you already have a working printer.cfg you will use for this setup?" 8 78); then
     whiptail --title "Verify printer.cfg" --msgbox "Ensure your printer.cfg is already copied to /home/pi before continuing." 8 78
   else
@@ -246,14 +266,13 @@ get_inputs() {
       ;;
     esac
     ;;
-  esac   
- 
-  whiptail --title "IMPORTANT NOTICE" --msgbox "This installer will take several minutes to complete.\nYou should be able to access Mainsail in your browser at ${SYSTEM_IP} after the install completes." 10 105
+  esac
 }
 
 verify_inputs() {
   if (whiptail --title "Verify Settings" --yesno "Please confirm the installer settings before continuing:\n\nIP whitelist for Web UI: $IP_ADDRESS_RESPONSE\nConfigure mjpeg-streamer: $WEBCAM_SETUP_RESPONSE\nChange system hostname: $CHANGE_HOSTNAME_RESPONSE\nMCU firmware version: $MCU_SETUP_RESPONSE" 12 78); then
-    echo
+    whiptail --title "IMPORTANT NOTICE" --msgbox "This installer will take several minutes to complete.\nYou should be able to access Mainsail in your browser at ${SYSTEM_IP} after the install completes." 10 78
+	echo
     echo
     echo "#################"
     echo "Beginning Install"
@@ -641,7 +660,13 @@ display_info_finish() {
 verify_ready
 ascii_art
 clean_image_warning
-get_inputs
+get_password_response
+get_ip_response
+get_webcam_response
+get_hostname_response
+get_timezone_response
+get_mcu_response
+get_printer_config_response
 verify_inputs
 install_packages
 install_printer_config
