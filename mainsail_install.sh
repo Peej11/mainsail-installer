@@ -525,10 +525,12 @@ test_api() {
   
   if [ $(curl -sG4 "http://localhost:7125/printer/info" | grep '^{"result"' -c) = 1 ]; then
     echo "The Klipper API service is working correctly"
+	sleep 2
   else
     echo "The Klipper API service is not working correctly"
     ERROR=1
     KLIPPER_API_ERROR="The Klipper API was not configured correctly"
+	sleep 2
   fi
 }
 
@@ -579,7 +581,7 @@ test_nginx() {
     echo "Nginx is not configured correctly"
     ERROR=1
     NGINX_ERROR="Nginx was not configured correctly"
-    sleep 5
+    sleep 2
   fi
   echo
   echo
@@ -646,6 +648,13 @@ display_info_finish() {
     echo "The installer encountered the following errors during install"
     echo ${KLIPPER_API_ERROR}
     echo ${NGINX_ERROR}
+	echo
+	echo
+	echo "##### Troubleshooting steps..."
+    echo "You try to access Mainsail in your browser at ${SYSTEM_IP}"
+	echo
+    echo "If Klipper fails to start due to configuration errors, run 'cat /tmp/klippy.log' to view the Klipper log"
+	echo "If you make a configuration change and need to issue a firmware restart without a functional UI, you can issue the command 'curl --data POST http://<printer_ip>/printer/firmware_restart'"
   fi
   
   if [ $CHANGE_HOSTNAME_RESPONSE = "Y" ]; then
