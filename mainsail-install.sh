@@ -414,8 +414,8 @@ install_printer_config() {
   if [ -e "/home/pi/printer.cfg" ]; then  
     echo "Printer.cfg exists"
     echo "Verifying virtual_sdcard and api_server are enabled"
-	if [ -e "/home/pi/mainsail-installer/empty_printer.cfg" ]; then
-      rm /home/pi/mainsail-installer/empty_printer.cfg
+	if [ -e "/home/pi/mainsail-installer/empty-printer.cfg" ]; then
+      rm /home/pi/mainsail-installer/empty-printer.cfg
     fi
     sleep .5
 
@@ -445,7 +445,7 @@ install_printer_config() {
     echo "Printer.cfg does not exist"
     echo "Copying sample file for Mainsail to use."
     sleep .5
-    mv /home/pi/mainsail-installer/empty_printer.cfg /home/pi/printer.cfg
+    mv /home/pi/mainsail-installer/empty-printer.cfg /home/pi/printer.cfg
     chown pi:pi /home/pi/printer.cfg
     chmod 644 /home/pi/printer.cfg
   fi
