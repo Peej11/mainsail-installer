@@ -33,7 +33,7 @@ Sample contents look like this:
 Boot and SSH into your pi. Default credentials are pi/raspberry.  
 																		 
 Copy a working `printer.cfg` to your home directory. (The script will copy a sparse `printer.cfg` if no config is detected to allow the UI to connect to Klipper.)  
-Run `wget -q -O mainsail-install.zip https://github.com/ArmyAg08/mainsail-installer/archive/master.zip && unzip -j -d ~/mainsail-installer/ mainsail-install.zip && rm mainsail-install.zip` to download the installer.
+Run `wget -q -O mainsail-install.zip https://github.com/ArmyAg08/mainsail-installer/archive/master.zip && unzip -j -d ~/mainsail-installer/ mainsail-install.zip && rm mainsail-install.zip` to download the installer.  
 Run `chmod +x ~/mainsail-installer/mainsail-install.sh` to make executable.  
 Run `~/mainsail-installer/mainsail-install.sh` to start the install.  
 
