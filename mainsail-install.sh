@@ -153,7 +153,7 @@ EOF
 }
 
 clean_image_warning() {
-  if (whiptail --title "Confirm Install" --yesno "This installer is intended to run on a clean Raspbian image. Installing on top of another OctoPrint or Klipper instance may have unintended results.\n\nDo you want to continue?" --yes-button "Continue" --no-button "Exit" --defaultno 10 78); then
+  if (whiptail --title "Confirm Install" --yesno "This installer is intended to run on a clean Raspbian image. Installing on top of another OctoPrint or Klipper instance may have unintended results.\n\nDo you want to continue?" --yes-button "Continue" --no-button "Exit" 10 78); then
     CONTINUE_INSTALL="Y"
   else
     exit 0
@@ -274,7 +274,11 @@ get_printer_config_response() {
 
 verify_inputs() {
   if (whiptail --title "Verify Settings" --yesno "Please confirm the installer settings before continuing:\n\nIP whitelist for Web UI: $IP_ADDRESS_RESPONSE\nConfigure mjpeg-streamer: $WEBCAM_SETUP_RESPONSE\nChange system hostname: $CHANGE_HOSTNAME_RESPONSE\nMCU firmware version: $MCU_SETUP_RESPONSE" --yes-button "Confirm" --no-button "Edit" 12 78); then
-    whiptail --title "IMPORTANT NOTICE" --msgbox "This installer will take several minutes to complete.\nYou should be able to access Mainsail in your browser at ${SYSTEM_IP} after the install completes." 10 78
+    if (whiptail --title "IMPORTANT NOTICE" --yesno "This installer will take several minutes to complete.\nYou should be able to access Mainsail in your browser at ${SYSTEM_IP} after the install completes.\n\nDo you want to begin the install?" --yes-button "Install" --no-button "Exit" 12 78); then
+	  CONTINUE_INSTALL="Y"
+	else
+	  exit 0
+	fi
 	echo
     echo
     echo "#################"
