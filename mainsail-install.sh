@@ -96,7 +96,7 @@ ascii_art() {
 }
 
 set_config_var() {
-  lua - "$1" "$2" "$3" <<EOF > "$3.bak"
+  lua - "$1" "$2" "$3" <<EOF > "/home/pi/config.txt.bak"
 local key=assert(arg[1])
 local value=assert(arg[2])
 local fn=assert(arg[3])
@@ -114,22 +114,9 @@ if not made_change then
   print(key.."="..value)
 end
 EOF
-mv "$3.bak" "$3"
-}
-
-clear_config_var() {
-  lua - "$1" "$2" <<EOF > "$2.bak"
-local key=assert(arg[1])
-local fn=assert(arg[2])
-local file=assert(io.open(fn))
-for line in file:lines() do
-  if line:match("^%s*"..key.."=.*$") then
-    line="#"..line
-  end
-  print(line)
-end
-EOF
-mv "$2.bak" "$2"
+chmod 755 /home/pi/config.txt.bak
+sudo chown root:root /home/pi/config.txt.bak
+sudo mv "/home/pi/config.txt.bak" "$3"
 }
 
 get_config_var() {
@@ -177,7 +164,25 @@ get_ip_response() {
 get_webcam_response() {
   if (whiptail --title "Setup Webcam" --yesno "Do you want to setup mjpeg-streamer to use a webcam?" 8 78); then
     WEBCAM_SETUP_RESPONSE="Y"
-  whiptail --title "Verify Webcam" --msgbox "You must have your webcam connected or the mjpeg-streamer service won't start." 8 78
+    
+	if (whiptail --title "Camera Type" --yesno "Are you using a USB webcam or Picam with ribbon cable?" --yes-button "USB" --no-button "Picam" 8 78); then
+	  WEBCAM_TYPE="USB"
+    else
+	  WEBCAM_TYPE="PICAM"
+	  DO_REBOOT="Y"
+	  
+	  sudo sed /boot/config.txt -i -e "s/^startx/#startx/"
+      sudo sed /boot/config.txt -i -e "s/^fixup_file/#fixup_file/"
+	  
+	  set_config_var start_x 1 /boot/config.txt
+      CUR_GPU_MEM=$(get_config_var gpu_mem /boot/config.txt)
+      if [ -z "$CUR_GPU_MEM" ] || [ "$CUR_GPU_MEM" -lt 128 ]; then
+        set_config_var gpu_mem 128 /boot/config.txt
+      fi
+	fi
+	
+	
+	whiptail --title "Verify Webcam" --msgbox "You must have your webcam connected or the mjpeg-streamer service won't start." 8 78
   else
     WEBCAM_SETUP_RESPONSE="N"
   fi
@@ -186,7 +191,8 @@ get_webcam_response() {
 get_hostname_response() {
 if (whiptail --title "Change Hostname" --yesno "Do you want to change the system hostname?" 8 78); then
     CHANGE_HOSTNAME_RESPONSE="Y"
-    NEW_HOSTNAME=$(whiptail --title "Hostname" --inputbox "Please provide a hostname." 8 78 3>&1 1>&2 2>&3)
+	DO_REBOOT="Y"
+    NEW_HOSTNAME=$(whiptail --title "Hostname" --inputbox "Please provide a hostname." --nocancel 8 78 "VORON" 3>&1 1>&2 2>&3)
   else
     CHANGE_HOSTNAME_RESPONSE="N"
   fi
@@ -664,9 +670,8 @@ display_info_finish() {
 	echo "If you make a configuration change and need to issue a firmware restart without a functional UI, you can issue the command 'curl --data POST http://<printer_ip>/printer/firmware_restart'"
   fi
   
-  if [ $CHANGE_HOSTNAME_RESPONSE = "Y" ]; then
-    echo "You should reboot the system after changing the hostname."
-    echo "System will reboot in 10 seconds."
+  if [ $DO_REBOOT = "Y" ]; then
+    echo "You need to reboot the system. The system will reboot in 10 seconds."
     sleep 10
     sudo shutdown -r now
   fi

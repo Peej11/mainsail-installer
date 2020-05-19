@@ -38,10 +38,12 @@ Run the following commands to download and launch the installer:
     wget -q -O mainsail-install.zip https://github.com/ArmyAg08/mainsail-installer/archive/master.zip && unzip -j -d ~/mainsail-installer/ mainsail-install.zip && rm mainsail-install.zip
     chmod +x ~/mainsail-installer/mainsail-install.sh
     ~/mainsail-installer/mainsail-install.sh
+	
+**IMPORTANT:** Please read all of the prompts carefully. There are many different configuration options to set and choose from.  
 
 # Known Issues
 * There are not currently any default configs for V0 or V1. Wget will fail in these instances.
-* If you try to use a PiCam, mjpg-streamer will fail to start. Enable the camera with `sudo raspi-config` and restart.  
+* ~~If you try to use a PiCam, mjpg-streamer will fail to start. Enable the camera with `sudo raspi-config` and restart.~~  
 * ~~The installer works best if you use your working `printer.cfg` from your current printer. The installer will download a stock config based on user input if available. Otherwise it will fallback to a simple config but it will cause issues currently.~~  
 * ~~The install process for Klipper will only compile the MCU firmware. You may get connection errors if the firmware on the board is not already flashed for Klipper.~~  
 * ~~Installer will only report a wireless IP address at the end. If you have a wired connection, it won\'t display an address.~~  
@@ -51,9 +53,9 @@ Run the following commands to download and launch the installer:
 # To Do List
 * Add MCU flashing  
 * Validate IP address input  
-* Add V0 and V1 printer.cfg links when available
-* Add PiCam support  
+* Add V0 and V1 printer.cfg links when available  
 * Add SKR Mini E3 `make menuconfig` support  
+* ~~Add PiCam support~~  
 * ~~Clean up `printer.cfg` handling~~  
 * ~~Add 'support' for wired or wireless connections~~  
 * ~~Better error handling~~  
