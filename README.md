@@ -52,7 +52,8 @@ Run the following commands to download and launch the installer:
 * Add MCU flashing  
 * Validate IP address input  
 * Add V0 and V1 printer.cfg links when available
-* Add PiCam support
+* Add PiCam support  
+* Add SKR Mini E3 `make menuconfig` support  
 * ~~Clean up `printer.cfg` handling~~  
 * ~~Add 'support' for wired or wireless connections~~  
 * ~~Better error handling~~  

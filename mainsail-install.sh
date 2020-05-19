@@ -19,9 +19,12 @@ V2_350_CONFIG="https://raw.githubusercontent.com/VoronDesign/Voron-2/Voron2.4/fi
 
 
 verify_ready() {
-  if [ "$EUID" -eq 0 ]; then
+  if [ "$EUID" = 0 ]; then
     echo "This script must not run as root"
-    exit -1
+    exit 0
+  elif [ $(whoami) = "root" ]; then
+    echo "This script must not run as root"
+	exit 0
   fi
 }
 
@@ -150,7 +153,7 @@ EOF
 }
 
 clean_image_warning() {
-  if (whiptail --title "Confirm Install" --yesno "This installer is intended to run on a clean Raspbian image. Do you want to continue?" 8 78); then
+  if (whiptail --title "Confirm Install" --yesno "This installer is intended to run on a clean Raspbian image. Installing on top of another OctoPrint or Klipper instance may have unintended results.\n\nDo you want to continue?" --yes-button "Continue" --no-button "Exit" --defaultno 10 78); then
     CONTINUE_INSTALL="Y"
   else
     exit 0
@@ -159,7 +162,7 @@ clean_image_warning() {
 
 get_password_response() {
   if [ -e /run/sshwarn ] && [ $(echo $USER | grep pi -c) = 1 ]; then
-    if (whiptail --title "Change Password" --yesno "You should change the default password with SSH enabled. This is a security risk. Do you want to change your password?" 8 78); then
+    if (whiptail --title "Change Password" --yesno "It looks like you haven't changed the default password and also have SSH enabled. This is a security risk.\n\nDo you want to change your password?" 11 78); then
       passwd
     else
       CHANGE_PASSWORD_RESPONSE="N"
@@ -168,7 +171,7 @@ get_password_response() {
 }
 
 get_ip_response() {
-  IP_ADDRESS_RESPONSE=$(whiptail --title "Provide IP Address" --inputbox "Provide a single IP address or an address range in 24-bit CIDR notation to allow trusted clients in the printer.cfg file. The default value below will whitelist all addresses between 192.168.0.1 - 192.168.1.254. This will allow Web UI access as well as full access to the API from any host in this range. You can edit this later or add additional ranges in your printer.cfg under the api_server section." 15 78 "192.168.0.0/24" 3>&1 1>&2 2>&3)
+  IP_ADDRESS_RESPONSE=$(whiptail --title "Provide IP Address" --inputbox "Provide a single IP address or an address range in 24-bit CIDR notation to allow trusted clients in the printer.cfg file. The default value below will whitelist all addresses between 192.168.0.1 - 192.168.1.254. This will allow Web UI access as well as full access to the API from any host in this range. You can edit this later or add additional ranges in your printer.cfg under the api_server section." --nocancel 15 78 "192.168.0.0/24" 3>&1 1>&2 2>&3)
 }
 
 get_webcam_response() {
@@ -190,7 +193,7 @@ if (whiptail --title "Change Hostname" --yesno "Do you want to change the system
 }
 
 get_timezone_response() {
-  if (whiptail --title "Change Timezone" --yesno "Do you want to change the timezone? This will allow the Web UI to show correct times in various locations. The current timezone is $(cat /etc/timezone)." 9 78); then
+  if (whiptail --title "Change Timezone" --yesno "The current timezone is $(cat /etc/timezone). Setting the correct timezone will allow the Web UI to show correct times in various locations.\n\nDo you want to change the timezone?  " 10 78); then
     CHANGE_TIMEZONE_RESPONSE="Y"
     sudo dpkg-reconfigure tzdata
   else
@@ -213,7 +216,7 @@ get_printer_config_response() {
   if (whiptail --title "Verify printer.cfg" --yesno "Do you already have a working printer.cfg you will use for this setup?" 8 78); then
     whiptail --title "Verify printer.cfg" --msgbox "Ensure your printer.cfg is already copied to /home/pi before continuing." 8 78
   else
-    PRINTER_MODEL=$(whiptail --title "Select printer" --menu "What printer model do you have?" 12 48 4 \
+    PRINTER_MODEL=$(whiptail --title "Select printer" --menu "What printer model do you have?" --nocancel 12 48 4 \
       "V0" "" \
       "V1" ""\
       "V2" "" 3>&2 2>&1 1>&3
@@ -227,7 +230,7 @@ get_printer_config_response() {
       wget -O "printer.cfg" $V0_CONFIG
     ;;
     "V1")
-      PRINTER_MODEL=$(whiptail --title "Select printer size" --menu "What size is your printer?" 12 48 4 \
+      PRINTER_MODEL=$(whiptail --title "Select printer size" --menu "What size is your printer?" --nocancel 12 48 4 \
       "250^3" "" \
       "300^3" "" 3>&2 2>&1 1>&3)
     case $PRINTER_MODEL in
@@ -244,7 +247,7 @@ get_printer_config_response() {
     esac
     ;;
     "V2")
-      PRINTER_MODEL=$(whiptail --title "Select printer size" --menu "What size is your printer?" 12 48 4 \
+      PRINTER_MODEL=$(whiptail --title "Select printer size" --menu "What size is your printer?" --nocancel 12 48 4 \
       "250^3" "" \
       "300^3" "" \
       "350^3" "" 3>&2 2>&1 1>&3)
@@ -270,7 +273,7 @@ get_printer_config_response() {
 }
 
 verify_inputs() {
-  if (whiptail --title "Verify Settings" --yesno "Please confirm the installer settings before continuing:\n\nIP whitelist for Web UI: $IP_ADDRESS_RESPONSE\nConfigure mjpeg-streamer: $WEBCAM_SETUP_RESPONSE\nChange system hostname: $CHANGE_HOSTNAME_RESPONSE\nMCU firmware version: $MCU_SETUP_RESPONSE" 12 78); then
+  if (whiptail --title "Verify Settings" --yesno "Please confirm the installer settings before continuing:\n\nIP whitelist for Web UI: $IP_ADDRESS_RESPONSE\nConfigure mjpeg-streamer: $WEBCAM_SETUP_RESPONSE\nChange system hostname: $CHANGE_HOSTNAME_RESPONSE\nMCU firmware version: $MCU_SETUP_RESPONSE" --yes-button "Confirm" --no-button "Edit" 12 78); then
     whiptail --title "IMPORTANT NOTICE" --msgbox "This installer will take several minutes to complete.\nYou should be able to access Mainsail in your browser at ${SYSTEM_IP} after the install completes." 10 78
 	echo
     echo
