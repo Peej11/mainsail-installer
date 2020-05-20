@@ -1,6 +1,7 @@
 # mainsail-installer
-This is an install script to setup [Klipper](https://github.com/KevinOConnor/klipper), the [Klipper API](https://github.com/Arksine/klipper/tree/work-web_server-20200131), and the [Web Interface](https://github.com/meteyou/mainsail) on a clean SD card image with Raspbian.  
-Thanks to tinpec for cleaning up the first pass of my ASCII art and Fulg for bypassing the manual `make menuconfig` in klipper :)
+This is an install script to automate the [Klipper](https://github.com/KevinOConnor/klipper), [Klipper API](https://github.com/Arksine/klipper/tree/work-web_server-20200131), and [Web Interface](https://github.com/meteyou/mainsail) installation process on Raspbian.  
+
+Please read [How to Install](https://github.com/ArmyAg08/mainsail-installer#how-to-install) to get started.  
 
 # What does this installer do?  
 The installer will give you the option to configure several common items from running `sudo raspi-config`: change password, change hostname, and configure timezone. Hostname and timezone do impact how the Web UI displays information.
@@ -15,7 +16,7 @@ The installer will provide the option to setup mjpg-streamer if you want to use 
 
 # How to Install
 Flash an SD card with the Raspbian image from [here](https://www.raspberrypi.org/downloads/raspbian/).  
-Be sure to place a file named `ssh` on the /boot partition to enable SSH.  
+Create a file named `ssh` (with no file extension) on the /boot partition to enable SSH.  
 Create a file called `wpa_supplicant.conf` on the /boot partition and add the contents to configure wireless access.  
 
 Sample contents look like this:  
@@ -42,21 +43,12 @@ Run the following commands to download and launch the installer:
 **IMPORTANT:** Please read all of the prompts carefully. There are many different configuration options to set and choose from.  
 
 # Known Issues
-* There are not currently any default configs for V0 or V1. Wget will fail in these instances.
-* ~~If you try to use a PiCam, mjpg-streamer will fail to start. Enable the camera with `sudo raspi-config` and restart.~~  
-* ~~The installer works best if you use your working `printer.cfg` from your current printer. The installer will download a stock config based on user input if available. Otherwise it will fallback to a simple config but it will cause issues currently.~~  
-* ~~The install process for Klipper will only compile the MCU firmware. You may get connection errors if the firmware on the board is not already flashed for Klipper.~~  
-* ~~Installer will only report a wireless IP address at the end. If you have a wired connection, it won\'t display an address.~~  
-* ~~Error detection isn\'t terribly robust.~~  
-* ~~If the Klipper service fails to start, the installer may show as failed. You can run `cat /tmp/klippy.log` to check for errors.~~
+* There are not currently any default configs for V0 or V1. Wget will fail in these instances.  
 
 # To Do List
 * Add MCU flashing  
 * Validate IP address input  
 * Add V0 and V1 printer.cfg links when available  
 * Add SKR Mini E3 `make menuconfig` support  
-* ~~Add PiCam support~~  
-* ~~Clean up `printer.cfg` handling~~  
-* ~~Add 'support' for wired or wireless connections~~  
-* ~~Better error handling~~  
-* ~~Add MJPEG install & configure webcam~~  
+
+Thanks to tinpec for cleaning up the first pass of my ASCII art and Fulg for bypassing the manual `make menuconfig` in klipper and a few of the other Voron devs for helping me hack my way through this :)

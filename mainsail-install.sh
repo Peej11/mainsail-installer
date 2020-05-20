@@ -10,6 +10,7 @@ GUI_JSON="{\"webcam\":{\"url\":\"http://${SYSTEM_IP}:8081/?action=stream\"},\"gu
 CURRENT_HOSTNAME="$(hostname)"
 KLIPPER_DIR=/home/pi/klipper
 KLIPPER_CONFIG_FRAGMENT=${KLIPPER_DIR}/.config_fragment
+DO_REBOOT="N"
 V0_CONFIG=""
 V1_250_CONFIG=""
 V1_300_CONFIG=""
