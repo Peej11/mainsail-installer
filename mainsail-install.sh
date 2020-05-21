@@ -5,6 +5,7 @@ COL_RED='\e[0;31m'
 COL_NONE='\e[0m'
 ERROR=0
 SYSTEM_IP="$(ip route get 1.1.1.1 | awk '{print $7}' | head -n1)"
+SYSTEM_SUBNET_CIDR="$(ip route get 1.1.1.1 | awk '{print $7}' | head -n1 | grep -Eo '((?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.)((?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.)((?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.)')0/24"
 MAINSAIL_FILE="https://github.com/meteyou/mainsail/releases/download/v0.0.12/mainsail-alpha-0.0.12.zip"
 GUI_JSON="{\"webcam\":{\"url\":\"http://${SYSTEM_IP}:8081/?action=stream\"},\"gui\":{\"dashboard\":{\"boolWebcam\":true,\"boolTempchart\":true,\"boolConsole\":false,\"hiddenMacros\":[]},\"webcam\":{\"bool\":false},\"gcodefiles\":{\"countPerPage\":10}}}"
 CURRENT_HOSTNAME="$(hostname)"
@@ -159,7 +160,7 @@ get_password_response() {
 }
 
 get_ip_response() {
-  IP_ADDRESS_RESPONSE=$(whiptail --title "Provide IP Address" --inputbox "Provide a single IP address or an address range in 24-bit CIDR notation to allow trusted clients in the printer.cfg file. The default value below will whitelist all addresses between 192.168.0.1 - 192.168.0.254. This will allow Web UI access as well as full access to the API from any host in this range. You can edit this later or add additional ranges in your printer.cfg under the api_server section." --nocancel 15 78 "192.168.0.0/24" 3>&1 1>&2 2>&3)
+  IP_ADDRESS_RESPONSE=$(whiptail --title "Provide IP Address" --inputbox "Provide a single IP address or an address range in 24-bit CIDR notation to allow trusted clients in the printer.cfg file. The default value below will whitelist all addresses on the Raspberry Pi's subnet. This will allow Web UI access as well as full access to the API from any host in this range. You can edit this later or add additional ranges in your printer.cfg under the api_server section." --nocancel 15 78 $SYSTEM_SUBNET_CIDR 3>&1 1>&2 2>&3)
 }
 
 get_webcam_response() {

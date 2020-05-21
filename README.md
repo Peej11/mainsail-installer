@@ -47,7 +47,6 @@ Run the following commands to download and launch the installer:
 
 # To Do List
 * Add MCU flashing  
-* Validate IP address input  
 * Add V0 and V1 printer.cfg links when available  
 * Add SKR Mini E3 `make menuconfig` support  
 
