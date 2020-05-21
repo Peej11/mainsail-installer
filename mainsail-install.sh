@@ -5,7 +5,7 @@ COL_RED='\e[0;31m'
 COL_NONE='\e[0m'
 ERROR=0
 SYSTEM_IP="$(ip route get 1.1.1.1 | awk '{print $7}' | head -n1)"
-SYSTEM_SUBNET_CIDR="$(ip route get 1.1.1.1 | awk '{print $7}' | head -n1 | grep -Eo '((?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.)((?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.)((?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.)')0/24"
+SYSTEM_SUBNET_CIDR="$(ip route get 1.1.1.1 | awk '{print $7}' | head -n1 | grep -Eo '((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}')0/24"
 MAINSAIL_FILE="https://github.com/meteyou/mainsail/releases/download/v0.0.12/mainsail-alpha-0.0.12.zip"
 GUI_JSON="{\"webcam\":{\"url\":\"http://${SYSTEM_IP}:8081/?action=stream\"},\"gui\":{\"dashboard\":{\"boolWebcam\":true,\"boolTempchart\":true,\"boolConsole\":false,\"hiddenMacros\":[]},\"webcam\":{\"bool\":false},\"gcodefiles\":{\"countPerPage\":10}}}"
 CURRENT_HOSTNAME="$(hostname)"
