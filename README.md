@@ -15,7 +15,7 @@ The installer will automatically compile the MCU firmware for the controller you
 The installer will provide the option to setup mjpg-streamer if you want to use a webcam. If selected, it will also configure the Web UI to display the camera feed.  
 
 # How to Install
-Flash an SD card with the Raspbian image from [here](https://www.raspberrypi.org/downloads/raspbian/).  
+Flash an SD card with the Raspbian Lite image from [here](https://www.raspberrypi.org/downloads/raspbian/).  
 Create a file named `ssh` (with no file extension) on the /boot partition to enable SSH.  
 Create a file called `wpa_supplicant.conf` on the /boot partition and add the contents to configure wireless access.  
 
