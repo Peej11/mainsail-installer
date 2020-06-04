@@ -221,8 +221,11 @@ get_mcu_response() {
 }
 
 get_printer_config_response() {
-  if (whiptail --title "Verify printer.cfg" --yesno "Do you already have a working printer.cfg you will use for this setup?" 8 78); then
-    whiptail --title "Verify printer.cfg" --msgbox "Ensure your printer.cfg is already copied to /home/pi before continuing." 8 78
+  if [ -f "/boot/printer.cfg" ]; then
+    echo "Existing printer.cfg detected. Copying to home directory."
+	sudo mv /boot/printer.cfg ~/printer.cfg
+	sudo chown pi:pi ~/printer.cfg
+	sudo chmod 644 ~/printer.cfg
   else
     PRINTER_MODEL=$(whiptail --title "Select printer" --menu "What printer model do you have?" --nocancel 12 48 4 \
       "V0" "" \

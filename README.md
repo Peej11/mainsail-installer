@@ -18,6 +18,7 @@ The installer will provide the option to setup mjpg-streamer if you want to use 
 Flash an SD card with the Raspbian Lite image from [here](https://www.raspberrypi.org/downloads/raspbian/).  
 Create a file named `ssh` (with no file extension) on the /boot partition to enable SSH.  
 Create a file called `wpa_supplicant.conf` on the /boot partition and add the contents to configure wireless access.  
+Place your `printer.cfg`on the /boot partition and the installer will move it to the home directory.
 
 Sample contents look like this:  
 
@@ -32,9 +33,8 @@ Sample contents look like this:
     }  
 
 Boot and SSH into your pi. Default credentials are pi/raspberry.  
-Copy a working `printer.cfg` to your home directory. (The script will copy a sparse `printer.cfg` if no config is detected to allow the UI to connect to Klipper.)  
 
-Run the following commands to download and launch the installer:  
+Run the following commands as the `pi` user to download and launch the installer:  
 
     wget -q -O mainsail-install.zip https://github.com/ArmyAg08/mainsail-installer/archive/master.zip && unzip -j -d ~/mainsail-installer/ mainsail-install.zip && rm mainsail-install.zip
     chmod +x ~/mainsail-installer/mainsail-install.sh
