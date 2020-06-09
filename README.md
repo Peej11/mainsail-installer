@@ -15,12 +15,14 @@ The installer will automatically compile the MCU firmware for the controller you
 The installer will provide the option to setup mjpg-streamer if you want to use a webcam. If selected, it will also configure the Web UI to display the camera feed.  
 
 # How to Install
+**Note:** You should backup your `printer.cfg` before running the installer. Please also consider installing on a clean SD card in case you choose to return to Octoprint or encounter installer issues.  
+
 Flash an SD card with the Raspbian Lite image from [here](https://www.raspberrypi.org/downloads/raspbian/).  
 Create a file named `ssh` (with no file extension) on the /boot partition to enable SSH.  
 Create a file called `wpa_supplicant.conf` on the /boot partition and add the contents to configure wireless access.  
 Place your `printer.cfg`on the /boot partition and the installer will move it to the home directory.
 
-Sample contents look like this:  
+Sample `wpa_supplicant.conf` contents look like this:  
 
     country=US
     update_config=1
