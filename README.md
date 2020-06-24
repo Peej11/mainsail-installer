@@ -10,7 +10,7 @@ You will be prompted to download a sample Voron config from Github for your prin
 
 The installer will install Klipper, the Klipper API, and the Web Interface.  
 
-The installer will automatically compile the MCU firmware for the controller you select. It will not attempt to flash the MCU.  
+The installer will automatically compile the MCU firmware for the controller you select. It will not attempt to flash the MCU. You can find the output firmware file at `~/klipper/out/klipper.bin`.  
 
 The installer will provide the option to setup mjpg-streamer if you want to use a webcam. If selected, it will also configure the Web UI to display the camera feed.  
 
