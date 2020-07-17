@@ -1,7 +1,7 @@
 #!/bin/bash
 # chmod +x mjpg-streamer.sh
-# Crontab: @reboot /home/pi/mjpg-streamer/mjpg-streamer.sh start
-# Crontab: @reboot /home/pi/mjpg-streamer/mjpg-streamer-experimental/mjpg-streamer.sh start
+# Crontab: @reboot /home/<<USER_PLACEHOLDER>>/mjpg-streamer/mjpg-streamer.sh start
+# Crontab: @reboot /home/<<USER_PLACEHOLDER>>/mjpg-streamer/mjpg-streamer-experimental/mjpg-streamer.sh start
 
 MJPG_STREAMER_BIN="/usr/local/bin/mjpg_streamer"  # "$(dirname $0)/mjpg_streamer"
 MJPG_STREAMER_WWW="/usr/local/share/mjpg-streamer/www"

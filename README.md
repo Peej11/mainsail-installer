@@ -36,7 +36,7 @@ Sample `wpa_supplicant.conf` contents look like this:
 
 Boot and SSH into your pi. Default credentials are pi/raspberry.  
 
-Run the following commands as the `pi` user to download and launch the installer:  
+Run the following commands as the user you use to work with to download and launch the installer:  
 
     wget -q -O mainsail-install.zip https://github.com/ArmyAg08/mainsail-installer/archive/master.zip && unzip -j -d ~/mainsail-installer/ mainsail-install.zip && rm mainsail-install.zip
     chmod +x ~/mainsail-installer/mainsail-install.sh
