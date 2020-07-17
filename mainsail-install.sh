@@ -465,7 +465,7 @@ install_printer_config() {
     echo "Printer.cfg does not exist"
     echo "Copying sample file for Mainsail to use."
     sleep .5
-	sed -i 's=/pi/=/${USER}/=g' /home/${USER}/mainsail-installer/empty-printer.cfg
+	sed -i 's=/pi/=/'"${USER}"'/=g' /home/${USER}/mainsail-installer/empty-printer.cfg
     mv /home/${USER}/mainsail-installer/empty-printer.cfg /home/${USER}/printer.cfg
     chown ${USER}:${USER_GRP} /home/${USER}/printer.cfg
     chmod 644 /home/${USER}/printer.cfg
@@ -564,7 +564,7 @@ install_nginx() {
   echo
   sleep .5
   sudo apt install nginx -y
-  sed -i 's=/pi/=/${USER}/=g' /home/${USER}/mainsail-installer/nginx.cfg
+  sed -i 's=/pi/=/'"${USER}"'/=g' /home/${USER}/mainsail-installer/nginx.cfg
   sudo mv /home/${USER}/mainsail-installer/nginx.cfg /etc/nginx/sites-available/mainsail
   sudo chown ${USER}:${USER_GRP} /etc/nginx/sites-available/mainsail
   sudo chmod 644 /etc/nginx/sites-available/mainsail
@@ -641,7 +641,7 @@ install_mjpg_streamer() {
     sudo make install
 	
 	# Evaluate the mjpg-streamer template in order to inject correct user information
-	sed -i 's/<<USER_PLACEHOLDER>>/${USER}/g' /home/${USER}/mainsail-installer/mjpg-streamer.sh
+	sed -i 's=<<USER_PLACEHOLDER>>='"${USER}"'=g' /home/${USER}/mainsail-installer/mjpg-streamer.sh
 	chmod +x /home/${USER}/mainsail-installer/mjpg-streamer.sh
 	
     mv /home/${USER}/mainsail-installer/mjpg-streamer.sh /home/${USER}/mjpg-streamer.sh
