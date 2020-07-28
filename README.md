@@ -1,3 +1,6 @@
+# NOTE
+There's a newer Mainsail and Klipper branch that this has not been updated for. If you wish to use the latest, you'll need to do a manual install until I'm able to update the script.
+
 # mainsail-installer
 This is an install script to automate the [Klipper](https://github.com/KevinOConnor/klipper), [Klipper API](https://github.com/Arksine/klipper/tree/work-web_server-20200131), and [Web Interface](https://github.com/meteyou/mainsail) installation process on Raspbian.  
 
