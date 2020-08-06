@@ -1,6 +1,8 @@
 #!/bin/sh
 # This will install Mainsail for Klipper on a clean Raspbian image
 
+USER=`whoami`
+USER_GRP=`id -gn`
 COL_RED='\e[0;31m'
 COL_NONE='\e[0m'
 ERROR=0
@@ -9,7 +11,7 @@ SYSTEM_SUBNET_CIDR="$(ip route get 1.1.1.1 | awk '{print $7}' | head -n1 | grep 
 MAINSAIL_FILE="https://github.com/meteyou/mainsail/releases/download/v0.0.12/mainsail-alpha-0.0.12.zip"
 GUI_JSON="{\"webcam\":{\"url\":\"http://${SYSTEM_IP}:8081/?action=stream\"},\"gui\":{\"dashboard\":{\"boolWebcam\":true,\"boolTempchart\":true,\"boolConsole\":false,\"hiddenMacros\":[]},\"webcam\":{\"bool\":false},\"gcodefiles\":{\"countPerPage\":10}}}"
 CURRENT_HOSTNAME="$(hostname)"
-KLIPPER_DIR=/home/pi/klipper
+KLIPPER_DIR=/home/${USER}/klipper
 KLIPPER_CONFIG_FRAGMENT=${KLIPPER_DIR}/.config_fragment
 DO_REBOOT="N"
 V0_CONFIG=""
@@ -98,7 +100,7 @@ ascii_art() {
 }
 
 set_config_var() {
-  lua - "$1" "$2" "$3" <<EOF > "/home/pi/config.txt.bak"
+  lua - "$1" "$2" "$3" <<EOF > "/home/${USER}/config.txt.bak"
 local key=assert(arg[1])
 local value=assert(arg[2])
 local fn=assert(arg[3])
@@ -116,9 +118,9 @@ if not made_change then
   print(key.."="..value)
 end
 EOF
-chmod 755 /home/pi/config.txt.bak
-sudo chown root:root /home/pi/config.txt.bak
-sudo mv "/home/pi/config.txt.bak" "$3"
+chmod 755 /home/${USER}/config.txt.bak
+sudo chown root:root /home/${USER}/config.txt.bak
+sudo mv "/home/${USER}/config.txt.bak" "$3"
 }
 
 get_config_var() {
@@ -224,7 +226,7 @@ get_printer_config_response() {
   if [ -f "/boot/printer.cfg" ]; then
     echo "Existing printer.cfg detected. Copying to home directory."
 	sudo mv /boot/printer.cfg ~/printer.cfg
-	sudo chown pi:pi ~/printer.cfg
+	sudo chown ${USER}:${USER_GRP} ~/printer.cfg
 	sudo chmod 644 ~/printer.cfg
   else
     PRINTER_MODEL=$(whiptail --title "Select printer" --menu "What printer model do you have?" --nocancel 12 48 4 \
@@ -237,7 +239,7 @@ get_printer_config_response() {
   case $PRINTER_MODEL in
     "V0")
       whiptail --title "Download printer.cfg" --msgbox "The default V0 config will be downloaded from Github." 8 78
-      cd /home/pi
+      cd /home/${USER}
       wget -O "printer.cfg" $V0_CONFIG
     ;;
     "V1")
@@ -247,12 +249,12 @@ get_printer_config_response() {
     case $PRINTER_MODEL in
       "250^3")
         whiptail --title "Download printer.cfg" --msgbox "The default V1 - 250^3 config will be downloaded from Github." 8 78
-        cd /home/pi
+        cd /home/${USER}
         wget -O "printer.cfg" $V1_250_CONFIG
       ;;
       "300^3")
         whiptail --title "Download printer.cfg" --msgbox "The default V1 - 300^3 config will be downloaded from Github." 8 78
-        cd /home/pi
+        cd /home/${USER}
         wget -O "printer.cfg" $V1_300_CONFIG
       ;;
     esac
@@ -265,17 +267,17 @@ get_printer_config_response() {
     case $PRINTER_MODEL in
       "250^3")
         whiptail --title "Download printer.cfg" --msgbox "The default V2 - 250^3 config will be downloaded from Github." 8 78
-        cd /home/pi
+        cd /home/${USER}
         wget -O "printer.cfg" $V2_250_CONFIG
       ;;
       "300^3")
         whiptail --title "Download printer.cfg" --msgbox "The default V2 - 300^3 config will be downloaded from Github." 8 78
-        cd /home/pi
+        cd /home/${USER}
         wget -O "printer.cfg" $V2_300_CONFIG
       ;;
       "350^3")
         whiptail --title "Download printer.cfg" --msgbox "The default V2 - 350^3 config will be downloaded from Github." 8 78
-        cd /home/pi
+        cd /home/${USER}
         wget -O "printer.cfg" $V2_350_CONFIG
       ;;
     esac
@@ -400,7 +402,7 @@ EOF
 }
 
 install_packages() {  
-  cd /home/pi
+  cd /home/${USER}
   
   echo
   echo
@@ -429,43 +431,44 @@ install_printer_config() {
   echo
   sleep .5
     
-  if [ -e "/home/pi/printer.cfg" ]; then  
+  if [ -e "/home/${USER}/printer.cfg" ]; then  
     echo "Printer.cfg exists"
     echo "Verifying virtual_sdcard and api_server are enabled"
-	if [ -e "/home/pi/mainsail-installer/empty-printer.cfg" ]; then
-      rm /home/pi/mainsail-installer/empty-printer.cfg
+	if [ -e "/home/${USER}/mainsail-installer/empty-printer.cfg" ]; then
+      rm /home/${USER}/mainsail-installer/empty-printer.cfg
     fi
     sleep .5
 
-    if [ $(grep '^\[virtual_sdcard\]$' /home/pi/printer.cfg) ]; then
+    if [ $(grep '^\[virtual_sdcard\]$' /home/${USER}/printer.cfg) ]; then
       echo "Virtual SDcard is already configured"
     else
       echo "Virtual SDcard is not configured in printer.cfg"
       echo "Configuring Virtual SDcard"
-      printf "\n\n" >> /home/pi/printer.cfg
-	  echo "[virtual_sdcard]" >> /home/pi/printer.cfg
-      echo "path: /home/pi/sdcard" >> /home/pi/printer.cfg
+      printf "\n\n" >> /home/${USER}/printer.cfg
+	  echo "[virtual_sdcard]" >> /home/${USER}/printer.cfg
+      echo "path: /home/${USER}/sdcard" >> /home/${USER}/printer.cfg
     fi
     
-    if [ $(grep '^\[api_server\]$' /home/pi/printer.cfg) ]; then
+    if [ $(grep '^\[api_server\]$' /home/${USER}/printer.cfg) ]; then
       echo "API Server is already configured"
     else
       echo "API Server is not configured in printer.cfg"
       echo "Configuring API Server"
-      printf "\n\n" >> /home/pi/printer.cfg
-	  echo "[api_server]" >> /home/pi/printer.cfg
-      echo "trusted_clients:" >> /home/pi/printer.cfg
-      echo " $IP_ADDRESS_RESPONSE" >> /home/pi/printer.cfg
-      echo " 127.0.0.0/24" >> /home/pi/printer.cfg
+      printf "\n\n" >> /home/${USER}/printer.cfg
+	  echo "[api_server]" >> /home/${USER}/printer.cfg
+      echo "trusted_clients:" >> /home/${USER}/printer.cfg
+      echo " $IP_ADDRESS_RESPONSE" >> /home/${USER}/printer.cfg
+      echo " 127.0.0.0/24" >> /home/${USER}/printer.cfg
     fi
   
   else
     echo "Printer.cfg does not exist"
     echo "Copying sample file for Mainsail to use."
     sleep .5
-    mv /home/pi/mainsail-installer/empty-printer.cfg /home/pi/printer.cfg
-    chown pi:pi /home/pi/printer.cfg
-    chmod 644 /home/pi/printer.cfg
+	sed -i 's=/pi/=/'"${USER}"'/=g' /home/${USER}/mainsail-installer/empty-printer.cfg
+    mv /home/${USER}/mainsail-installer/empty-printer.cfg /home/${USER}/printer.cfg
+    chown ${USER}:${USER_GRP} /home/${USER}/printer.cfg
+    chmod 644 /home/${USER}/printer.cfg
   fi
 }
 
@@ -478,7 +481,7 @@ install_klipper() {
   echo
   sleep .5
   git clone https://github.com/KevinOConnor/klipper
-  /home/pi/klipper/scripts/install-octopi.sh
+  /home/${USER}/klipper/scripts/install-octopi.sh
   
   echo "Building and Flashing the MCU"
   cd $KLIPPER_DIR
@@ -513,17 +516,17 @@ install_api() {
   echo "###########################"
   echo
   sleep .5
-  cd /home/pi/klipper
+  cd /home/${USER}/klipper
   git remote add arksine https://github.com/Arksine/klipper.git
   git fetch arksine
   git checkout arksine/work-web_server-20200131
-  cd /home/pi/klipper
+  cd /home/${USER}/klipper
   sudo service klipper stop
   git clean -x -d -n
-  /home/pi/klipper/scripts/install-moonraker.sh
+  /home/${USER}/klipper/scripts/install-moonraker.sh
   echo "Creating Virtual SD"
   sleep .5
-  mkdir /home/pi/sdcard
+  mkdir /home/${USER}/sdcard
   sudo service klipper restart
 }
 
@@ -561,12 +564,13 @@ install_nginx() {
   echo
   sleep .5
   sudo apt install nginx -y
-  sudo mv /home/pi/mainsail-installer/nginx.cfg /etc/nginx/sites-available/mainsail
-  sudo chown pi:pi /etc/nginx/sites-available/mainsail
+  sed -i 's=/pi/=/'"${USER}"'/=g' /home/${USER}/mainsail-installer/nginx.cfg
+  sudo mv /home/${USER}/mainsail-installer/nginx.cfg /etc/nginx/sites-available/mainsail
+  sudo chown ${USER}:${USER_GRP} /etc/nginx/sites-available/mainsail
   sudo chmod 644 /etc/nginx/sites-available/mainsail
   echo "Creating directory for static files"
   sleep .5
-  mkdir /home/pi/mainsail
+  mkdir /home/${USER}/mainsail
   
   if [ -e "/etc/nginx/sites-enabled/default" ]; then
     sudo rm /etc/nginx/sites-enabled/default
@@ -613,7 +617,7 @@ install_mainsail() {
   echo "###################################"
   echo
   sleep .5
-  cd /home/pi/mainsail
+  cd /home/${USER}/mainsail
   wget -q -O mainsail.zip ${MAINSAIL_FILE} && unzip mainsail.zip && rm mainsail.zip
 }
 
@@ -635,11 +639,16 @@ install_mjpg_streamer() {
     cd mjpg-streamer/mjpg-streamer-experimental
     make
     sudo make install
-    mv /home/pi/mainsail-installer/mjpg-streamer.sh /home/pi/mjpg-streamer.sh
-    chmod +x /home/pi/mjpg-streamer.sh
-    (crontab -l 2>/dev/null; echo "@reboot /home/pi/mjpg-streamer.sh start") | crontab -
-    /home/pi/mjpg-streamer.sh start
-    echo ${GUI_JSON} > /home/pi/sdcard/gui.json
+	
+	# Evaluate the mjpg-streamer template in order to inject correct user information
+	sed -i 's=<<USER_PLACEHOLDER>>='"${USER}"'=g' /home/${USER}/mainsail-installer/mjpg-streamer.sh
+	chmod +x /home/${USER}/mainsail-installer/mjpg-streamer.sh
+	
+    mv /home/${USER}/mainsail-installer/mjpg-streamer.sh /home/${USER}/mjpg-streamer.sh
+    chmod +x /home/${USER}/mjpg-streamer.sh
+    (crontab -l 2>/dev/null; echo "@reboot /home/${USER}/mjpg-streamer.sh start") | crontab -
+    /home/${USER}/mjpg-streamer.sh start
+    echo ${GUI_JSON} > /home/${USER}/sdcard/gui.json
   fi
 }
 
