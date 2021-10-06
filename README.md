@@ -20,7 +20,12 @@ The installer will provide the option to setup mjpg-streamer if you want to use 
 **Note:** You should backup your `printer.cfg` before running the installer. Please also consider installing on a clean SD card in case you choose to return to Octoprint or encounter installer issues.  
 
 Flash an SD card with the Raspbian Lite image from [here](https://www.raspberrypi.org/downloads/raspbian/).  
-Create a file named `ssh` (with no file extension) on the /boot partition to enable SSH.  
+Create a file named `ssh` (with no file extension) on the /boot partition to enable SSH.
+
+**LAN install:**
+Put your desired fixed Lan IP in cmdline.txt like ip=192.168.0.10 and follow the instrucions in the installer to set os based again
+
+**WLAN Install:**
 Create a file called `wpa_supplicant.conf` on the /boot partition and add the contents to configure wireless access.  
 Place your `printer.cfg`on the /boot partition and the installer will move it to the home directory.
 
